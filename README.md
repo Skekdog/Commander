@@ -5,4 +5,4 @@
 A Roblox Studio plugin, providing a simple multi-line command bar, with support for undo and saving presets.
 Does NOT (yet) support syntax highlighting.
 
-Available on the Creator Store [here](https://create.roblox.com/store/asset/18845843214).
+Unfortunately, Commander is not available on the Creator Store as it has been moderated and multiple appeals have been denied. This is likely due to the plugin's usage of `loadstring`.
