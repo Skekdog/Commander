@@ -1,0 +1,10 @@
+*.rbxmx
+*.rbxm
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+sourcemap.json
+.vscode/*
+!.vscode/settings.json
+Ignore/

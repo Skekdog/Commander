@@ -1,0 +1,7 @@
+{
+	"name": "Commander",
+	"emitLegacyScripts": false,
+	"tree": {
+		"$path": "Source"
+	}
+}

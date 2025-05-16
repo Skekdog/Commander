@@ -1,0 +1,65 @@
+name: "Release"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}-${{ github.run_attempt }}
+          release_name: v${{ github.run_number }}-${{ github.run_attempt }}
+          draft: false
+          prerelease: false
+
+  build:
+    name: Build
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Rokit
+        uses: raild3x/setup-rokit@v0.1.0
+        with:
+          cache: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: rojo build . --output Commander.rbxm
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Commander.rbxm
+          path: Commander.rbxm
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: Commander.rbxm
+          asset_name: Commander.rbxm
+          asset_content_type: application/octet-stream
+
+      - name: Publish Plugin
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+        working-directory: Scripts/Cloud
+        run: |
+          rojo build publish_plugin.project.json --output plugin_place.rbxl
+          lune run execute_task.luau plugin_place.rbxl publishing_task.luau

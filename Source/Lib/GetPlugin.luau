@@ -1,0 +1,1 @@
+return plugin or script:FindFirstAncestorOfClass("Plugin") or error("Plugin not found")
