@@ -1,12 +1,15 @@
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local HttpService = game:GetService("HttpService")
 local GetPlugin = require("../Lib/GetPlugin")
+local Highlighter = require(script.Parent.Parent.Lib.Highlighter) -- Luau lsp doesn't correctly handle string requires with rojo projects yet (init files?) correctly yet
+
+Highlighter.matchStudioSettings()
 
 local plugin = GetPlugin
 
 local module = {}
 
-local colourSyncTargets: {GuiObject} = {}
+local colourSyncTargets: {GuiObject | UIStroke} = {}
 
 local widget = plugin:CreateDockWidgetPluginGui("Commander", DockWidgetPluginGuiInfo.new(
 	Enum.InitialDockState.Float,
@@ -102,6 +105,10 @@ codeBox.AutomaticSize = Enum.AutomaticSize.XY
 
 codeBox.ClearTextOnFocus = false
 codeBox.MultiLine = true
+
+Highlighter.highlight({
+	textObject = codeBox,
+})
 
 do
     local uiCorner = Instance.new("UICorner")

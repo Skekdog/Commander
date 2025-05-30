@@ -3,6 +3,8 @@
 ![Commander](./Assets/CommanderWide.png)
 
 A Roblox Studio plugin, providing a simple multi-line command bar, with support for undo and saving presets.
-Does NOT (yet) support syntax highlighting.
+Also supports syntax highlighting.
+
+Includes code from [boatbomber/Highlighter](https://github.com/boatbomber/Highlighter), with modifications to fix cases of ghost lines.
 
 Available on the Creator Store [here](https://create.roblox.com/store/asset/18845843214).
