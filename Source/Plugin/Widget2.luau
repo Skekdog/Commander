@@ -75,6 +75,8 @@ local scrollingFrame = ScrollFrame({
 	AutomaticCanvasSize = Enum.AutomaticSize.XY,
 })
 
+local LINE_NUMBER_OFFSET_SIZE = 40
+
 local codeEditor = BaseText(Instance.new("TextBox"), {
 	BaseGui = {
 		CornerRadius = UDim.new(0, 0),
@@ -86,7 +88,8 @@ local codeEditor = BaseText(Instance.new("TextBox"), {
 		},
 
 		AutomaticSize = Enum.AutomaticSize.XY,
-		Size = UDim2.fromScale(1, 1),
+		Size = UDim2.new(1, -LINE_NUMBER_OFFSET_SIZE, 1, 0),
+		Position = UDim2.fromOffset(LINE_NUMBER_OFFSET_SIZE, 0),
 
 		Transparency = 1,
 
@@ -107,6 +110,48 @@ local codeEditor = BaseText(Instance.new("TextBox"), {
 
 codeEditor.ClearTextOnFocus = false
 codeEditor.MultiLine = true
+
+local lineNumbers = BaseText(Instance.new("TextLabel"), {
+	BaseGui = {
+		CornerRadius = UDim.new(0, 0),
+		PaddingParams = {
+			Left = UDim.new(0, 8),
+			Top = UDim.new(0, 8),
+			Right = UDim.new(0, 0),
+			Bottom = UDim.new(0, 0),
+		},
+
+		Transparency = 1,
+
+		Size = UDim2.new(0, LINE_NUMBER_OFFSET_SIZE, 1, 0),
+		Position = UDim2.fromScale(0, 0),
+
+		Name = "LineNumbers",
+		Parent = scrollingFrame :: Instance,
+
+		AutomaticSize = Enum.AutomaticSize.Y,
+	},
+
+	TextXAlignment = Enum.TextXAlignment.Right,
+	TextYAlignment = Enum.TextYAlignment.Top,
+	TextScaled = false,
+	TextWrapped = false,
+
+	Font = Font.fromId(16658246179),
+
+	Text = "1",
+
+	FontSize = 18,
+})
+
+codeEditor:GetPropertyChangedSignal("Text"):Connect(function()
+	local lineCount = #codeEditor.Text:split("\n")
+
+	lineNumbers.Text = ""
+	for i = 1, lineCount do
+		lineNumbers.Text = lineNumbers.Text .. i .. "\n"
+	end
+end)
 
 Highlighter.highlight({
 	textObject = codeEditor,
