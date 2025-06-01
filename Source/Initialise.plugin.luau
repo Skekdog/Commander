@@ -5,7 +5,7 @@ if RunService:IsRunning() then
 end
 
 local Toolbar = require("./Plugin/Toolbar")
-local Widget = require("./Plugin/Widget")
+local Widget = require("./Plugin/Widget2")
 
 Toolbar.OnClick = function()
 	Widget.ToggleWidget()
