@@ -12,6 +12,7 @@ local function sync(gui: StyleTarget, style: Style, theme: StudioTheme): ()
 		gui.TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainText)
 		gui.PlaceholderColor3 = theme:GetColor(Enum.StudioStyleGuideColor.SubText)
 	elseif gui:IsA("TextLabel") then
+		gui.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground)
 		gui.TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainText)
 	elseif gui:IsA("TextButton") then
 		gui.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Button)

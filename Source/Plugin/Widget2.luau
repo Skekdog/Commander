@@ -20,7 +20,7 @@ local widget = plugin:CreateDockWidgetPluginGui("Commander", DockWidgetPluginGui
 	false,
 	true,
 	800,
-	350,
+	400,
 	600,
 	350
 	)
@@ -57,9 +57,30 @@ local editorFrame = BackgroundFrame({
 	Parent = frame,
 })
 
+local editorTitle = BaseText(Instance.new("TextLabel"), {
+	BaseGui = {
+		Size = UDim2.new(1, 0, 0.1, 8),
+		CornerRadius = UDim.new(0, 0),
+
+		PaddingParams = {
+			Left = UDim.new(0, 0),
+			Right = UDim.new(0, 0),
+			Top = UDim.new(0, 5),
+			Bottom = UDim.new(0, 13),
+		},
+
+		Name = "EditorTitle",
+		Parent = editorFrame :: Instance,
+	},
+
+	Text = "Untitled Script",
+	TextScaled = true,
+})
+
 local scrollingFrame = ScrollFrame({
 	BaseGui = {
-		Size = UDim2.fromScale(1, 1),
+		Size = UDim2.fromScale(1, 0.9),
+		Position = UDim2.fromScale(0, 0.1),
 
 		Name = "ScrollingFrame",
 		Parent = editorFrame :: Instance,
