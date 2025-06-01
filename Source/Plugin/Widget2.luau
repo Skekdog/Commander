@@ -279,6 +279,19 @@ local function addSavedScript(name: string): ()
 	end)
 
 	button.DeleteButton.Activated:Connect(function()
+		local response: boolean?
+		Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, function(confirmed: boolean)
+			response = confirmed
+		end)
+
+		while response == nil do
+			task.wait()
+		end
+
+		if not response then
+			return
+		end
+
 		Presets.DeletePreset(name)
 		button:Destroy()
 	end)
