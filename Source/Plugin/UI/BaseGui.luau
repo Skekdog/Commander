@@ -19,6 +19,9 @@ export type BaseGuiParams = {
 	Parent: Instance?,
 
 	Style: Style.Style?,
+	NoStyle: boolean?,
+
+	NoStroke: boolean?,
 
 	[any]: never,
 }
@@ -60,11 +63,14 @@ local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
 		gui.Parent = params.Parent
 	end
 
-	if not params.Transparency or params.Transparency < 1 then
+	if not params.NoStroke and (not params.Transparency or params.Transparency < 1) then
 		AddStroke(gui, 1)
 	end
 
-	task.defer(Style, gui, (params.Style or "Default") :: Style.Style)
+	if not params.NoStyle then
+		print("styling! " .. gui.Name)
+		task.defer(Style, gui, (params.Style or "Default") :: Style.Style)
+	end
 
 	return gui
 end
