@@ -60,13 +60,26 @@ local codeActionsFrame = BackgroundFrame({
 local saveButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.new(0.5, -5, 0, 0),
+		Position = UDim2.fromScale(0, 0),
 
 		Name = "SaveButton",
 		Parent = codeActionsFrame :: Instance,
 	},
 
 	Text = "Save",
+	TextScaled = true,
+})
+
+local saveToDiskButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.new(0.25, 5, 0, 0),
+
+		Name = "SaveToDiskButton",
+		Parent = codeActionsFrame :: Instance,
+	},
+
+	Text = "Save to Disk",
 	TextScaled = true,
 })
 

@@ -1,7 +1,7 @@
-local AddStroke = require("./UI/AddEffects/AddStroke")
-local BaseGui = require("./UI/BaseGui")
-local BackgroundFrame = require("./UI/BackgroundFrame")
-local BaseText = require("./UI/BaseText")
+local AddStroke = require("./AddEffects/AddStroke")
+local BaseGui = require("./BaseGui")
+local BackgroundFrame = require("./BackgroundFrame")
+local BaseText = require("./BaseText")
 local module = {}
 
 local messageObject: GuiObject?
