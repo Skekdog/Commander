@@ -1,4 +1,6 @@
 local GetPlugin = require("../Lib/GetPlugin")
+local Execute = require("./Core/Execute")
+local SaveToDisk = require("./Core/SaveToDisk")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
@@ -40,69 +42,6 @@ local frame = BackgroundFrame({
 
 	Name = "MainFrame", -- we're hacking into the mainframe!!!
 	Parent = widget,
-})
-
-local codeActionsFrame = BackgroundFrame({
-	PaddingParams = {
-		Left = UDim.new(0, 5),
-		Right = UDim.new(0, 5),
-		Top = UDim.new(0, 5),
-		Bottom = UDim.new(0, 5),
-	},
-
-	Size = UDim2.new(0.75, 0, 0.15, -5),
-	Position = UDim2.new(0.25, 0, 0.85, 5),
-
-	Name = "CodeActionsFrame",
-	Parent = frame,
-})
-
-local saveButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.fromScale(0, 0),
-
-		Name = "SaveButton",
-		Parent = codeActionsFrame :: Instance,
-	},
-
-	Text = "Save",
-	TextScaled = true,
-})
-
-local saveToDiskButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.new(0.25, 5, 0, 0),
-
-		Name = "SaveToDiskButton",
-		Parent = codeActionsFrame :: Instance,
-	},
-
-	Text = "Save to Disk",
-	TextScaled = true,
-})
-
-local executeButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.fromScale(0.75, 0),
-
-		Name = "ExecuteButton",
-		Parent = codeActionsFrame :: Instance,
-
-		Style = {
-			BackgroundColor3 = {
-				Color = Enum.StudioStyleGuideColor.MainButton,
-			},
-			TextColor3 = {
-				Color = Enum.StudioStyleGuideColor.BrightText,
-			},
-		}
-	},
-
-	Text = "Execute!",
-	TextScaled = true,
 })
 
 local editorFrame = BackgroundFrame({
@@ -244,6 +183,73 @@ do
 		}
 	})
 end
+
+local codeActionsFrame = BackgroundFrame({
+	PaddingParams = {
+		Left = UDim.new(0, 5),
+		Right = UDim.new(0, 5),
+		Top = UDim.new(0, 5),
+		Bottom = UDim.new(0, 5),
+	},
+
+	Size = UDim2.new(0.75, 0, 0.15, -5),
+	Position = UDim2.new(0.25, 0, 0.85, 5),
+
+	Name = "CodeActionsFrame",
+	Parent = frame,
+})
+
+local saveButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.fromScale(0, 0),
+
+		Name = "SaveButton",
+		Parent = codeActionsFrame :: Instance,
+	},
+
+	Text = "Save",
+	TextScaled = true,
+})
+
+BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.new(0.25, 5, 0, 0),
+
+		Name = "SaveToDiskButton",
+		Parent = codeActionsFrame :: Instance,
+	},
+
+	Text = "Save to Disk",
+	TextScaled = true,
+}).Activated:Connect(function()
+	SaveToDisk("Script", codeEditor.Text)
+end)
+
+BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.fromScale(0.75, 0),
+
+		Name = "ExecuteButton",
+		Parent = codeActionsFrame :: Instance,
+
+		Style = {
+			BackgroundColor3 = {
+				Color = Enum.StudioStyleGuideColor.MainButton,
+			},
+			TextColor3 = {
+				Color = Enum.StudioStyleGuideColor.BrightText,
+			},
+		}
+	},
+
+	Text = "Execute!",
+	TextScaled = true,
+}).Activated:Connect(function()
+	Execute(codeEditor.Text)
+end)
 
 local function addSavedScript(name: string, code: string): ()
 	local button = savedScriptButton:Clone()
