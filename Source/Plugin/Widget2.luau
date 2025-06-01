@@ -32,6 +32,7 @@ widget.ResetOnSpawn = false
 widget.Enabled = false
 
 local frame = BackgroundFrame({
+	CornerRadius = UDim.new(0, 0),
 	PaddingParams = {
 		Left = UDim.new(0, 5),
 		Right = UDim.new(0, 5),
