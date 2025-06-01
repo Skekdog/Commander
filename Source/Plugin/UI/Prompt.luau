@@ -97,7 +97,7 @@ local function reset(): ()
 	frame.Parent = nil
 end
 
-local function runAndClose(callback: () -> ()): () -> ()
+local function runAndClose(callback: () -> ()): (...any) -> ()
 	return function(): ()
 		reset()
 		callback()

@@ -24,7 +24,7 @@ export type BaseGuiParams = {
 }
 
 local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
-	params = params or {}
+	params = params or {} :: BaseGuiParams
 	assert(params)
 
 	gui.BackgroundColor3 = Color3.new(1, 1, 1)

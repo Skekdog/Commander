@@ -22,7 +22,7 @@ export type BaseTextParams = {
 }
 
 local function BaseText<T>(gui: T & (TextLabel | TextButton | TextBox), params: BaseTextParams?): T
-	params = params or {}
+	params = params or {} :: BaseTextParams
 	assert(params)
 
 	local label = gui :: T & TextLabel

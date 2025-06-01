@@ -1,3 +1,4 @@
+--!nocheck
 --[=[
 	Lexical scanner for creating a sequence of tokens from Lua source code.
 	This is a heavily modified and Roblox-optimized version of

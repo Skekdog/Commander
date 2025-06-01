@@ -142,7 +142,7 @@ do
 	gridLayout.Parent = savedScriptsFrame :: Instance
 end
 
-local savedScriptButton = BaseText(Instance.new("TextButton")) :: TextButton & {
+local savedScriptButton = (BaseText(Instance.new("TextButton")) :: any) :: TextButton & {
 	["TitleLabel"]: TextLabel,
 	["DeleteButton"]: ImageButton,
 }
