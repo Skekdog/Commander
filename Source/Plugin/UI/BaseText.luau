@@ -8,7 +8,13 @@ export type BaseTextParams = {
 	TextScaled: boolean?,
 	FontSize: number?,
 
+	Font: Font?,
 	Italics: boolean?,
+
+	TextXAlignment: Enum.TextXAlignment?,
+	TextYAlignment: Enum.TextYAlignment?,
+
+	TextWrapped: boolean?,
 
 	Colour: Color3?,
 
@@ -24,11 +30,16 @@ local function BaseText<T>(gui: T & (TextLabel | TextButton | TextBox), params: 
 
 	label.Text = params.Text or ""
 	label.TextScaled = if params.TextScaled ~= nil then params.TextScaled else true
-	label.TextSize = if params.FontSize then params.FontSize else 14
+	label.TextSize = params.FontSize or 14
+
+	label.TextWrapped = if params.TextWrapped ~= nil then params.TextWrapped else true
+
+	label.TextXAlignment = params.TextXAlignment or Enum.TextXAlignment.Center
+	label.TextYAlignment = params.TextYAlignment or Enum.TextYAlignment.Center
 
 	label.TextColor3 = if params.Colour then params.Colour else Color3.new(0, 0, 0)
 
-	local font = Font.fromEnum(Enum.Font.BuilderSans)
+	local font = params.Font or Font.fromEnum(Enum.Font.BuilderSans)
 	font.Style = if params.Italics then Enum.FontStyle.Italic else Enum.FontStyle.Normal
 
 	label.FontFace = font

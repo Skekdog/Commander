@@ -1,18 +1,24 @@
 local AddCorners = require("./AddEffects/AddCorners")
 local AddPadding = require("./AddEffects/AddPadding")
+local AddStroke = require("./AddEffects/AddStroke")
+local Style = require("./Style")
 
 export type BaseGuiParams = {
 	PaddingParams: AddPadding.PaddingParams?,
 	CornerRadius: UDim?,
 	Transparency: number?,
 
+	AutomaticSize: Enum.AutomaticSize?,
 	Size: UDim2?,
 	Position: UDim2?,
+	AnchorPoint: Vector2?,
 
 	Visible: boolean?,
 
 	Name: string?,
 	Parent: Instance?,
+
+	Style: Style.Style?,
 
 	[any]: never,
 }
@@ -23,6 +29,7 @@ local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
 
 	gui.BackgroundColor3 = Color3.new(1, 1, 1)
 	gui.BackgroundTransparency = params.Transparency or 0
+	gui.BorderSizePixel = 0
 
 	if params.PaddingParams then
 		AddPadding(gui, params.PaddingParams)
@@ -31,9 +38,19 @@ local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
 	gui.Size = params.Size or UDim2.fromScale(0.5, 0.5)
 	gui.Position = params.Position or UDim2.fromScale(0, 0)
 
+	gui.AutomaticSize = params.AutomaticSize or Enum.AutomaticSize.None
+
+	if params.AnchorPoint then
+		gui.AnchorPoint = params.AnchorPoint
+	end
+
 	gui.Visible = if params.Visible == nil then true else params.Visible
 
-	AddCorners(gui, params.CornerRadius or UDim.new(0, 8))
+	if not params.CornerRadius then
+		AddCorners(gui, UDim.new(0, 8))
+	elseif params.CornerRadius.Scale ~= 0 or params.CornerRadius.Offset ~= 0 then
+		AddCorners(gui, params.CornerRadius or UDim.new(0, 8))
+	end
 
 	if params.Name then
 		gui.Name = params.Name
@@ -42,6 +59,12 @@ local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
 	if params.Parent then
 		gui.Parent = params.Parent
 	end
+
+	if not params.Transparency or params.Transparency < 1 then
+		AddStroke(gui, 1)
+	end
+
+	task.defer(Style, gui, (params.Style or "Default") :: Style.Style)
 
 	return gui
 end
