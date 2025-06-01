@@ -44,6 +44,10 @@ settings().Studio.ThemeChanged:Connect(syncAll)
 local function Style(gui: StyleTarget, style: Style?): ()
 	styleTargets[gui] = style or "Default"
 	sync(gui, style or "Default", settings().Studio.Theme)
+
+	gui.Destroying:Connect(function()
+		styleTargets[gui] = nil
+	end)
 end
 
 return Style

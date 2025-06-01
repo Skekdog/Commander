@@ -1,5 +1,6 @@
 local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
+local Presets = require("./Core/Presets")
 local SaveToDisk = require("./Core/SaveToDisk")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
@@ -199,7 +200,31 @@ local codeActionsFrame = BackgroundFrame({
 	Parent = frame,
 })
 
-local saveButton = BaseText(Instance.new("TextButton"), {
+local function addSavedScript(name: string): ()
+	local button = savedScriptButton:Clone()
+
+	button.TitleLabel.Text = name
+	button.Name = name .. "_SavedScriptButton"
+
+	button.Activated:Connect(function()
+		codeEditor.Text = Presets.LoadPreset(name) or error("Failed to load preset " .. name)
+	end)
+
+	button.DeleteButton.Activated:Connect(function()
+		Presets.DeletePreset(name)
+		button:Destroy()
+	end)
+
+	Style(button)
+	Style(button.TitleLabel)
+	button.Parent = savedScriptsFrame :: Instance
+end
+
+for name in Presets.GetPresets() do
+	addSavedScript(name)
+end
+
+BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.25, 1),
 		Position = UDim2.fromScale(0, 0),
@@ -210,7 +235,18 @@ local saveButton = BaseText(Instance.new("TextButton"), {
 
 	Text = "Save",
 	TextScaled = true,
-})
+}).Activated:Connect(function()
+	local name = "test"
+	local code = codeEditor.Text
+
+	local alreadyExists = Presets.GetPresets()[name] ~= nil
+
+	Presets.UpdatePreset(name, code)
+
+	if not alreadyExists then
+		addSavedScript(name)
+	end
+end)
 
 BaseText(Instance.new("TextButton"), {
 	BaseGui = {
@@ -250,30 +286,6 @@ BaseText(Instance.new("TextButton"), {
 }).Activated:Connect(function()
 	Execute(codeEditor.Text)
 end)
-
-local function addSavedScript(name: string, code: string): ()
-	local button = savedScriptButton:Clone()
-
-	button.TitleLabel.Text = name
-	button.Name = name .. "_SavedScriptButton"
-
-	button.Activated:Connect(function()
-		codeEditor.Text = code
-	end)
-
-	Style(button)
-	Style(button.TitleLabel)
-	button.Parent = savedScriptsFrame :: Instance
-end
-
-local savedScripts: {[string]: string} = {
-	test1 = 'print("Hello, World!")',
-	test2 = 'print("Goodbye, World!")',
-}
-
-for i, v in savedScripts do
-	addSavedScript(i, v)
-end
 
 frame.Parent = widget
 
