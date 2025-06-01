@@ -84,6 +84,15 @@ local confirmButton = BaseText(AddStroke(Instance.new("TextButton")), {
 
 		Name = "ConfirmButton",
 		Parent = responsesFrame :: Instance,
+
+		Style = {
+			BackgroundColor3 = {
+				Color = Enum.StudioStyleGuideColor.MainButton,
+			},
+			TextColor3 = {
+				Color = Enum.StudioStyleGuideColor.BrightText,
+			},
+		},
 	},
 
 	Text = "OK",
