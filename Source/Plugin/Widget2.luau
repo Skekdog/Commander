@@ -318,7 +318,7 @@ BaseText(Instance.new("TextButton"), {
 	TextScaled = true,
 }).Activated:Connect(function()
 	local name: string | false?
-	Prompt.ShowInputPrompt(editorFrame, "Save Script", "Enter a name for the script", function(value: string?)
+	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", function(value: string?)
 		if value == nil then
 			name = false
 			return
