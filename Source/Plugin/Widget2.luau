@@ -5,6 +5,7 @@ local SaveToDisk = require("./Core/SaveToDisk")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
+local Prompt = require("./UI/Prompt")
 local ScrollFrame = require("./UI/ScrollFrame")
 local Style = require("./UI/Style")
 local Highlighter = require(script.Parent.Parent.Lib.Highlighter) -- Luau lsp doesn't correctly handle string requires with rojo projects yet (init files?) correctly yet
@@ -303,7 +304,24 @@ BaseText(Instance.new("TextButton"), {
 	Text = "Save",
 	TextScaled = true,
 }).Activated:Connect(function()
-	local name = "test"
+	local name: string | false?
+	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", function(value: string?)
+		if value == nil then
+			name = false
+			return
+		end
+		name = value
+	end)
+
+	while name == nil do
+		task.wait()
+	end
+
+	if name == false then
+		return
+	end
+	assert(name)
+
 	local code = codeEditor.Text
 
 	local alreadyExists = Presets.GetPresets()[name] ~= nil

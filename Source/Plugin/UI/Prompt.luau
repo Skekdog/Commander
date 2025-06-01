@@ -97,14 +97,14 @@ local function reset(): ()
 	frame.Parent = nil
 end
 
-local function runAndClose(callback: () -> ()): (...any) -> ()
+local function runAndClose<T>(callback: (value: T) -> (), value: T): (...any) -> ()
 	return function(): ()
 		reset()
-		callback()
+		callback(value)
 	end
 end
 
-function module.ShowConfirmationPrompt(parent: Instance, title: string, message: string, onConfirm: () -> (), onCancel: () -> ()): ()
+function module.ShowConfirmationPrompt(parent: Instance, title: string, message: string, onResponse: (boolean) -> ()): ()
 	reset()
 
 	titleLabel.Text = title
@@ -128,8 +128,44 @@ function module.ShowConfirmationPrompt(parent: Instance, title: string, message:
 
 	messageObject = messageLabel
 
-	confirmConn = confirmButton.Activated:Connect(runAndClose(onConfirm))
-	cancelConn = cancelButton.Activated:Connect(runAndClose(onCancel))
+	confirmConn = confirmButton.Activated:Connect(runAndClose(onResponse, true))
+	cancelConn = cancelButton.Activated:Connect(runAndClose(onResponse, false))
+
+	frame.Visible = true
+	frame.Parent = parent
+end
+
+function module.ShowInputPrompt(parent: Instance, title: string, placeholderText: string, onResponse: (value: string?) -> ()): ()
+	reset()
+
+	titleLabel.Text = title
+
+	local inputBox = BaseText(Instance.new("TextBox"), {
+		BaseGui = {
+			Transparency = 1,
+			Position = UDim2.fromScale(0, 0.25),
+			Size = UDim2.fromScale(1, 0.25),
+
+			Name = "InputBox",
+			Parent = frame :: Instance,
+		},
+
+		TextScaled = true,
+
+		Colour = Color3.new(0.5, 0.5, 0.5),
+	})
+
+	inputBox.PlaceholderText = placeholderText
+	inputBox.PlaceholderColor3 = Color3.new(0.5, 0.5, 0.5)
+
+	messageObject = inputBox
+
+	confirmConn = confirmButton.Activated:Connect(function()
+		runAndClose(onResponse, inputBox.Text)()
+	end)
+	cancelConn = cancelButton.Activated:Connect(function()
+		runAndClose(onResponse, nil)()
+	end)
 
 	frame.Visible = true
 	frame.Parent = parent
