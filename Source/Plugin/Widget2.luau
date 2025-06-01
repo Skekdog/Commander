@@ -229,9 +229,9 @@ do
 		Parent = savedScriptButton :: Instance,
 	})
 
-	deleteButton.ZIndex = 2
-	deleteButton.ImageContent = Content.fromAssetId(14002617467)
-	deleteButton.ImageColor3 = Color3.new(1, 0, 0)
+	deleteButton.ZIndex = 1
+	deleteButton.ImageContent = Content.fromAssetId(15921650550)
+	deleteButton.ImageColor3 = Color3.new(1, 1, 1)
 	deleteButton.ScaleType = Enum.ScaleType.Fit
 
 	BaseText(Instance.new("TextLabel"), {
