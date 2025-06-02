@@ -81,8 +81,10 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 	TextScaled = true,
 })
 
-local function markAsUnsaved(newText: string): ()
-	if newText == Presets.LoadPreset(currentScript) then
+local isUnsaved = false
+local function tryMarkAsUnsaved(newText: string): ()
+	isUnsaved = newText ~= Presets.LoadPreset(currentScript)
+	if not isUnsaved then
 		return
 	end
 	editorTitle.Text = currentScript .. "*"
@@ -193,7 +195,7 @@ end
 codeEditor:GetPropertyChangedSignal("Text"):Connect(function()
 	local text = codeEditor.Text
 	doLineNumbers(text)
-	markAsUnsaved(text)
+	tryMarkAsUnsaved(text)
 end)
 
 Highlighter.highlight({
@@ -302,13 +304,35 @@ local function addSavedScript(name: string): ()
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
-		loadPreset(name, true)
+		local code = codeEditor.Text
+		tryMarkAsUnsaved(code)
+
+		local response: Prompt.Response?
+		if isUnsaved then
+			Prompt.ShowConfirmationPrompt(frame, "Save Script", currentScript, true, function(confirmed)
+				response = confirmed
+			end)
+
+			while response == nil do
+				task.wait()
+			end
+
+			if response == "OK" then
+				Presets.UpdatePreset(currentScript, code)
+			end
+		else
+			response = "OK"
+		end
+
+		if response ~= "Cancel" then
+			loadPreset(name, true)
+		end
 	end)
 
 	button.DeleteButton.Activated:Connect(function()
 		local response: boolean?
-		Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, function(confirmed: boolean)
-			response = confirmed
+		Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
+			response = confirmed == "OK"
 		end)
 
 		while response == nil do
@@ -371,9 +395,7 @@ saveButton.Activated:Connect(function()
 	Presets.UpdatePreset(name, code)
 	updateCurrentScript(name)
 
-	if code ~= codeEditor.Text then
-		markAsUnsaved(codeEditor.Text)
-	end
+	tryMarkAsUnsaved(codeEditor.Text)
 
 	if not alreadyExists then
 		addSavedScript(name)

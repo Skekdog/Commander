@@ -4,6 +4,8 @@ local BackgroundFrame = require("./BackgroundFrame")
 local BaseText = require("./BaseText")
 local module = {}
 
+export type Response = "OK" | "Cancel" | "Reject"
+
 local messageObject: GuiObject?
 
 local backgroundFrame = BackgroundFrame({
@@ -75,13 +77,13 @@ do
 	listLayout.FillDirection = Enum.FillDirection.Horizontal
 	listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	listLayout.Padding = UDim.new(0, 8)
+	listLayout.HorizontalFlex = Enum.UIFlexAlignment.Fill
+	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	listLayout.Parent = responsesFrame
 end
 
 local confirmButton = BaseText(AddStroke(Instance.new("TextButton")), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.5, 1),
-
 		Name = "ConfirmButton",
 		Parent = responsesFrame :: Instance,
 
@@ -98,10 +100,10 @@ local confirmButton = BaseText(AddStroke(Instance.new("TextButton")), {
 	Text = "OK",
 })
 
+confirmButton.LayoutOrder = 3
+
 local cancelButton = BaseText(AddStroke(Instance.new("TextButton")), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.5, 1),
-
 		Name = "CancelButton",
 		Parent = responsesFrame :: Instance,
 	},
@@ -109,8 +111,24 @@ local cancelButton = BaseText(AddStroke(Instance.new("TextButton")), {
 	Text = "Cancel",
 })
 
+cancelButton.LayoutOrder = 1
+
+local rejectButton = BaseText(AddStroke(Instance.new("TextButton")), {
+	BaseGui = {
+		Name = "RejectButton",
+		Parent = responsesFrame,
+
+		Visible = false,
+	},
+
+	Text = "No",
+})
+
+rejectButton.LayoutOrder = 2
+
 local confirmConn: RBXScriptConnection?
 local cancelConn: RBXScriptConnection?
+local rejectConn: RBXScriptConnection?
 
 local function reset(): ()
 	if confirmConn then
@@ -119,6 +137,11 @@ local function reset(): ()
 
 	if cancelConn then
 		cancelConn:Disconnect()
+	end
+
+	rejectButton.Visible = false
+	if rejectConn then
+		rejectConn:Disconnect()
 	end
 
 	if messageObject then
@@ -136,7 +159,7 @@ local function runAndClose<T>(callback: (value: T) -> (), value: T): (...any) ->
 	end
 end
 
-function module.ShowConfirmationPrompt(parent: Instance, title: string, message: string, onResponse: (boolean) -> ()): ()
+function module.ShowConfirmationPrompt(parent: Instance, title: string, message: string, rejectAvailable: boolean, onResponse: (response: Response) -> ()): ()
 	reset()
 
 	titleLabel.Text = title
@@ -160,8 +183,13 @@ function module.ShowConfirmationPrompt(parent: Instance, title: string, message:
 
 	messageObject = messageLabel
 
-	confirmConn = confirmButton.Activated:Connect(runAndClose(onResponse, true))
-	cancelConn = cancelButton.Activated:Connect(runAndClose(onResponse, false))
+	confirmConn = confirmButton.Activated:Connect(runAndClose(onResponse, "OK"))
+	cancelConn = cancelButton.Activated:Connect(runAndClose(onResponse, "Cancel"))
+
+	if rejectAvailable then
+		rejectButton.Visible = true
+		rejectConn = rejectButton.Activated:Connect(runAndClose(onResponse, "Reject"))
+	end
 
 	backgroundFrame.Visible = true
 	backgroundFrame.Parent = parent
