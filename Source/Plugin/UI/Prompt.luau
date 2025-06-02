@@ -189,6 +189,7 @@ function module.ShowInputPrompt(parent: Instance, title: string, placeholderText
 		Colour = Color3.new(0.5, 0.5, 0.5),
 	})
 
+	inputBox.ClearTextOnFocus = false
 	inputBox.PlaceholderText = placeholderText
 	inputBox.PlaceholderColor3 = Color3.new(0.5, 0.5, 0.5)
 
