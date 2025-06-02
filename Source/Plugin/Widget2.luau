@@ -319,7 +319,7 @@ for name in Presets.GetPresets() do
 	addSavedScript(name)
 end
 
-BaseText(Instance.new("TextButton"), {
+local saveButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.25, 1),
 		Position = UDim2.fromScale(0, 0),
@@ -330,7 +330,9 @@ BaseText(Instance.new("TextButton"), {
 
 	Text = "Save",
 	TextScaled = true,
-}).Activated:Connect(function()
+})
+
+saveButton.Activated:Connect(function()
 	local name: string | false?
 	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", currentScript, function(value: string?)
 		if value == nil then
@@ -360,7 +362,7 @@ BaseText(Instance.new("TextButton"), {
 	end
 end)
 
-BaseText(Instance.new("TextButton"), {
+local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.25, 1),
 		Position = UDim2.new(0.25, 5, 0, 0),
@@ -371,11 +373,13 @@ BaseText(Instance.new("TextButton"), {
 
 	Text = "Save to Disk",
 	TextScaled = true,
-}).Activated:Connect(function()
+})
+
+saveToDiskButton.Activated:Connect(function()
 	SaveToDisk(currentScript, codeEditor.Text)
 end)
 
-BaseText(Instance.new("TextButton"), {
+local executeButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.25, 1),
 		Position = UDim2.fromScale(0.75, 0),
@@ -395,7 +399,9 @@ BaseText(Instance.new("TextButton"), {
 
 	Text = "Execute!",
 	TextScaled = true,
-}).Activated:Connect(function()
+})
+
+executeButton.Activated:Connect(function()
 	Execute(codeEditor.Text)
 end)
 
