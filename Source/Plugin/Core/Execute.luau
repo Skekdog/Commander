@@ -1,29 +1,5 @@
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local RunService = game:GetService("RunService")
-local ServerScriptService = game:GetService("ServerScriptService")
-
-local function executeEditMode(code: string): ()
-	local exec, err = loadstring(code)
-	if not exec then
-		error(err or "Unknown error occured")
-	end
-	return exec()
-end
-
-local function executePlayMode(code: string): ()
-	local folder = ServerScriptService:FindFirstChild("CommanderExecutionScripts")
-	if not folder then
-		folder = Instance.new("Folder")
-		folder.Name = "CommanderExecutionScripts"
-		folder.Parent = ServerScriptService
-	end
-
-	local executionScript = Instance.new("Script")
-	executionScript.Source = code
-	executionScript.RunContext = if RunService:IsServer() then Enum.RunContext.Server else Enum.RunContext.Client
-	executionScript.Name = "CommanderExecutionScript"
-	executionScript.Parent = folder
-end
 
 local function Execute(code: string): ()
 	local recording: string?
@@ -36,10 +12,13 @@ local function Execute(code: string): ()
 	end
 
 	local success, result = pcall(function(): any
-		if RunService:IsRunning() then
-			return executePlayMode(code)
-		end
-		return executeEditMode(code)
+		local newScript = Instance.new("ModuleScript")
+
+		local withReturn = code .. " return nil"
+		newScript.Source = withReturn;
+		(require)(newScript)
+
+		return nil
 	end)
 
 	if not success then
