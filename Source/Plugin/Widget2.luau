@@ -346,6 +346,8 @@ local saveButton = BaseText(Instance.new("TextButton"), {
 })
 
 saveButton.Activated:Connect(function()
+	local code = codeEditor.Text
+
 	local name: string | false?
 	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", currentScript, function(value: string?)
 		if value == nil then
@@ -364,12 +366,14 @@ saveButton.Activated:Connect(function()
 	end
 	assert(name)
 
-	local code = codeEditor.Text
-
 	local alreadyExists = Presets.GetPresets()[name] ~= nil
 
 	Presets.UpdatePreset(name, code)
 	updateCurrentScript(name)
+
+	if code ~= codeEditor.Text then
+		markAsUnsaved(codeEditor.Text)
+	end
 
 	if not alreadyExists then
 		addSavedScript(name)
