@@ -346,7 +346,7 @@ saveButton.Activated:Connect(function()
 		task.wait()
 	end
 
-	if name == false then
+	if name == false or name == "" then
 		return
 	end
 	assert(name)
