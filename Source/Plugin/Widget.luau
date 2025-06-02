@@ -1,22 +1,27 @@
-local ChangeHistoryService = game:GetService("ChangeHistoryService")
-local HttpService = game:GetService("HttpService")
 local GetPlugin = require("../Lib/GetPlugin")
+local Execute = require("./Core/Execute")
+local Presets = require("./Core/Presets")
+local SaveToDisk = require("./Core/SaveToDisk")
+local BackgroundFrame = require("./UI/BackgroundFrame")
+local BaseGui = require("./UI/BaseGui")
+local BaseText = require("./UI/BaseText")
+local Prompt = require("./UI/Prompt")
+local ScrollFrame = require("./UI/ScrollFrame")
+local Style = require("./UI/Style")
 local Highlighter = require(script.Parent.Parent.Lib.Highlighter) -- Luau lsp doesn't correctly handle string requires with rojo projects yet (init files?) correctly yet
-
-Highlighter.matchStudioSettings()
 
 local plugin = GetPlugin
 
-local module = {}
+Highlighter.matchStudioSettings()
 
-local colourSyncTargets: {GuiObject | UIStroke} = {}
+local module = {}
 
 local widget = plugin:CreateDockWidgetPluginGui("Commander", DockWidgetPluginGuiInfo.new(
 	Enum.InitialDockState.Float,
 	false,
 	true,
 	800,
-	350,
+	400,
 	600,
 	350
 	)
@@ -27,350 +32,429 @@ widget.Title = "Commander"
 widget.ResetOnSpawn = false
 widget.Enabled = false
 
-local executeButton: TextButton
+local frame = BackgroundFrame({
+	CornerRadius = UDim.new(0, 0),
+	PaddingParams = {
+		Left = UDim.new(0, 5),
+		Right = UDim.new(0, 5),
+		Top = UDim.new(0, 5),
+		Bottom = UDim.new(0, 5),
+	},
 
--- This is not a comprehensive function and it should be updated if new ui objects are added
-local function syncOne(v: GuiObject | UIStroke, theme: any, noSyncPrimarySelection: boolean?)
-	if v:IsA("UIStroke") then
-		v.Color = theme:GetColor(Enum.StudioStyleGuideColor.Border)
-	elseif v:IsA("GuiObject") then
-		if v == executeButton and v:IsA("TextButton") then
-			v.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Button, Enum.StudioStyleGuideModifier.Disabled)
-			v.TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.ButtonText, Enum.StudioStyleGuideModifier.Disabled)
-		elseif v:IsA("TextBox") then
-			v.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.InputFieldBackground)
-			v.TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainText)
-			v.PlaceholderColor3 = theme:GetColor(Enum.StudioStyleGuideColor.SubText)
-		elseif v:IsA("TextLabel") then
-			v.TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainText)
-		elseif v:IsA("TextButton") then
-			v.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Button)
-			v.TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.ButtonText)
-		elseif v:IsA("ScrollingFrame") then
-			v.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground)
-			v.BorderColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Border)
-			v.ScrollBarImageColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Border) -- there is a dedicated ScrollBar colour, but it's no good on light mode.
-		else
-			v.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground)
-		end
+	Size = UDim2.fromScale(1, 1),
+
+	Name = "MainFrame", -- we're hacking into the mainframe!!!
+	Parent = widget,
+})
+
+local editorFrame = BackgroundFrame({
+	CornerRadius = UDim.new(0, 0),
+
+	Position = UDim2.fromScale(0.25, 0),
+	Size = UDim2.fromScale(0.75, 0.85),
+
+	Transparency = 1,
+
+	Name = "EditorFrame",
+	Parent = frame,
+})
+
+local currentScript = "Untitled Script"
+
+local editorTitle = BaseText(Instance.new("TextLabel"), {
+	BaseGui = {
+		Size = UDim2.new(1, 0, 0.1, 8),
+		CornerRadius = UDim.new(0, 0),
+
+		PaddingParams = {
+			Left = UDim.new(0, 0),
+			Right = UDim.new(0, 0),
+			Top = UDim.new(0, 5),
+			Bottom = UDim.new(0, 13),
+		},
+
+		Name = "EditorTitle",
+		Parent = editorFrame :: Instance,
+	},
+
+	Text = currentScript,
+	TextScaled = true,
+})
+
+local isUnsaved = false
+local function tryMarkAsUnsaved(newText: string): ()
+	isUnsaved = newText ~= Presets.LoadPreset(currentScript)
+	if not isUnsaved then
+		return
+	end
+	editorTitle.Text = currentScript .. "*"
+end
+
+local function updateCurrentScript(new: string)
+	currentScript = new
+	editorTitle.Text = new
+end
+
+local scrollingFrame = ScrollFrame({
+	BaseGui = {
+		Size = UDim2.fromScale(1, 0.9),
+		Position = UDim2.fromScale(0, 0.1),
+
+		Name = "ScrollingFrame",
+		Parent = editorFrame :: Instance,
+
+		Style = {
+			BackgroundColor3 = {
+				Color = Enum.StudioStyleGuideColor.ScriptBackground,
+			}
+		},
+	},
+
+	ScrollingDirection = Enum.ScrollingDirection.XY,
+	AutomaticCanvasSize = Enum.AutomaticSize.XY,
+})
+
+local LINE_NUMBER_OFFSET_SIZE = 40
+
+local codeEditor = BaseText(Instance.new("TextBox"), {
+	BaseGui = {
+		CornerRadius = UDim.new(0, 0),
+		PaddingParams = {
+			Left = UDim.new(0, 8),
+			Top = UDim.new(0, 8),
+			Right = UDim.new(0, 0),
+			Bottom = UDim.new(0, 0),
+		},
+
+		AutomaticSize = Enum.AutomaticSize.XY,
+		Size = UDim2.new(1, -LINE_NUMBER_OFFSET_SIZE, 1, 0),
+		Position = UDim2.fromOffset(LINE_NUMBER_OFFSET_SIZE, 0),
+
+		Transparency = 1,
+
+		Name = "CodeEditor",
+		Parent = scrollingFrame :: Instance,
+	},
+
+	Font = Font.fromId(16658246179),
+
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextYAlignment = Enum.TextYAlignment.Top,
+
+	TextWrapped = false,
+	TextScaled = false,
+
+	FontSize = 18,
+})
+
+codeEditor.ClearTextOnFocus = false
+codeEditor.MultiLine = true
+
+local lineNumbers = BaseText(Instance.new("TextLabel"), {
+	BaseGui = {
+		CornerRadius = UDim.new(0, 0),
+		PaddingParams = {
+			Left = UDim.new(0, 8),
+			Top = UDim.new(0, 8),
+			Right = UDim.new(0, 0),
+			Bottom = UDim.new(0, 0),
+		},
+
+		Transparency = 1,
+
+		Size = UDim2.new(0, LINE_NUMBER_OFFSET_SIZE, 1, 0),
+		Position = UDim2.fromScale(0, 0),
+
+		Name = "LineNumbers",
+		Parent = scrollingFrame :: Instance,
+
+		AutomaticSize = Enum.AutomaticSize.Y,
+	},
+
+	TextXAlignment = Enum.TextXAlignment.Right,
+	TextYAlignment = Enum.TextYAlignment.Top,
+	TextScaled = false,
+	TextWrapped = false,
+
+	Font = Font.fromId(16658246179),
+
+	Text = "1",
+
+	FontSize = 18,
+})
+
+local function doLineNumbers(text: string): ()
+	local lineCount = #text:split("\n")
+
+	lineNumbers.Text = ""
+	for i = 1, lineCount do
+		lineNumbers.Text = lineNumbers.Text .. i .. "\n"
 	end
 end
 
-local frame = Instance.new("Frame")
-frame.BackgroundTransparency = 1
-frame.Size = UDim2.fromScale(1, 1)
-
-local codeBoxFrame = Instance.new("ScrollingFrame")
-codeBoxFrame.Name = "CodeScroll"
-
-codeBoxFrame.Position = UDim2.new(0.2, 4, 0, 4)
-codeBoxFrame.Size = UDim2.new(0.8, -8, 0.8, -8)
-
-codeBoxFrame.ClipsDescendants = true
-codeBoxFrame.BackgroundTransparency = 1
-codeBoxFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
-codeBoxFrame.HorizontalScrollBarInset = Enum.ScrollBarInset.Always
-codeBoxFrame.AutomaticCanvasSize = Enum.AutomaticSize.XY
-codeBoxFrame.ScrollBarThickness = 4
-codeBoxFrame.CanvasSize = UDim2.new()
-
-do
-	local uiPadding = Instance.new("UIPadding")
-	uiPadding.PaddingLeft = UDim.new(0, 2)
-	uiPadding.PaddingRight = UDim.new(0, 2)
-	uiPadding.PaddingTop = UDim.new(0, 2)
-	uiPadding.PaddingBottom = UDim.new(0, 2)
-	uiPadding.Parent = codeBoxFrame
-end
-
-table.insert(colourSyncTargets, codeBoxFrame)
-
-codeBoxFrame.Parent = frame
-
-local codeBox = Instance.new("TextBox")
-codeBox.Name = "Code"
-
-codeBox.TextColor3 = Color3.new(1, 1, 1)
-codeBox.TextSize = 18
-
-codeBox.Font = Enum.Font.RobotoMono
-codeBox.PlaceholderText = ""
-codeBox.Text = ""
-
-codeBox.Size = UDim2.fromScale(1, 1)
-
-codeBox.TextXAlignment = Enum.TextXAlignment.Left
-codeBox.TextYAlignment = Enum.TextYAlignment.Top
-codeBox.AutomaticSize = Enum.AutomaticSize.XY
-
-codeBox.ClearTextOnFocus = false
-codeBox.MultiLine = true
+codeEditor:GetPropertyChangedSignal("Text"):Connect(function()
+	local text = codeEditor.Text
+	doLineNumbers(text)
+	tryMarkAsUnsaved(text)
+end)
 
 Highlighter.highlight({
-	textObject = codeBox,
+	textObject = codeEditor,
+})
+
+local savedScriptsFrame = ScrollFrame({
+	BaseGui = {
+		PaddingParams = {
+			Left = UDim.new(0, 2),
+			Right = UDim.new(0, 2),
+			Top = UDim.new(0, 2),
+			Bottom = UDim.new(0, 2),
+		},
+		Size = UDim2.fromScale(0.25, 1),
+
+		Transparency = 1,
+
+		AutomaticSize = Enum.AutomaticSize.Y,
+
+		Name = "SavedScriptsFrame",
+		Parent = frame :: Instance,
+	},
+
+	HorizontalScrollBarInset = Enum.ScrollBarInset.None,
 })
 
 do
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.Parent = codeBox
+	local gridLayout = Instance.new("UIGridLayout")
 
-    local uiStroke = Instance.new("UIStroke")
-    uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    table.insert(colourSyncTargets, uiStroke)
-    uiStroke.Parent = codeBox
+	gridLayout.CellSize = UDim2.fromScale(1, 0.1)
+	gridLayout.CellPadding = UDim2.fromOffset(5, 5)
 
-    local uiPadding = Instance.new("UIPadding")
-    uiPadding.PaddingLeft = UDim.new(0, 8)
-    uiPadding.PaddingTop = UDim.new(0, 8)
-	uiPadding.Parent = codeBox
+	gridLayout.Parent = savedScriptsFrame :: Instance
 end
 
-table.insert(colourSyncTargets, codeBox)
-codeBox.Parent = codeBoxFrame
-
-do
-	local warningLabel = Instance.new("TextLabel")
-	warningLabel.Name = "WarningLabel"
-
-	warningLabel.Font = Enum.Font.SourceSans
-	warningLabel.Text = "NOTE: Be careful when using Instance:Destroy(), as it is not possible to undo this! Instead, consider using Instance.Parent = nil."
-	warningLabel.TextScaled = true
-
-	warningLabel.Position = UDim2.new(0, 4, 0.825, 0)
-	warningLabel.Size = UDim2.new(0.55, -8, 0.15, -4)
-
-	warningLabel.BackgroundTransparency = 1
-
-	warningLabel.TextXAlignment = Enum.TextXAlignment.Left
-	
-	table.insert(colourSyncTargets, warningLabel)
-	warningLabel.Parent = frame
-end
-
-executeButton = Instance.new("TextButton")
-executeButton.Name = "Execute"
-
-executeButton.BackgroundColor3 = Color3.fromRGB(0, 197, 23)
-
-executeButton.Font = Enum.Font.SourceSans
-executeButton.Text = "▶ Execute"
-executeButton.TextColor3 = Color3.new(1, 1, 1)
-
-executeButton.Size = UDim2.fromScale(0.2, 0.15)
-executeButton.Position = UDim2.new(0.8, -4, 0.9, 0)
-executeButton.AnchorPoint = Vector2.new(0, 0.5)
-executeButton.TextScaled = true
-
-do
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.Parent = executeButton
-
-	local uiPadding = Instance.new("UIPadding")
-	uiPadding.PaddingBottom = UDim.new(0, 5)
-	uiPadding.PaddingTop = UDim.new(0, 5)
-	uiPadding.PaddingLeft = UDim.new(0, 5)
-	uiPadding.PaddingRight = UDim.new(0, 5)
-	uiPadding.Parent = executeButton
-end
-
-executeButton.Parent = frame
-
-local presetsFrame = Instance.new("ScrollingFrame")
-presetsFrame.Name = "Presets"
-
-presetsFrame.ScrollBarThickness = 4
-presetsFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-presetsFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
-
-presetsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-presetsFrame.CanvasSize = UDim2.new()
-presetsFrame.Size = UDim2.new(0.2, -8, 0.8, -8)
-presetsFrame.Position = UDim2.fromOffset(4, 4)
-
-do
-	local uiCorner = Instance.new("UICorner")
-	uiCorner.Parent = presetsFrame
-
-	local uiGridLayout = Instance.new("UIGridLayout")
-	uiGridLayout.CellSize = UDim2.fromScale(1, 0.2)
-	uiGridLayout.Parent = presetsFrame
-
-	local uiPadding = Instance.new("UIPadding")
-	uiPadding.PaddingLeft = UDim.new(0, 2)
-	uiPadding.PaddingTop = UDim.new(0, 2)
-	uiPadding.PaddingRight = UDim.new(0, 2)
-	uiPadding.PaddingBottom = UDim.new(0, 2)
-	uiPadding.Parent = presetsFrame
-end
-
-table.insert(colourSyncTargets, presetsFrame)
-presetsFrame.Parent = frame
-
-type Presets = {
-	[string]: string?,
+local savedScriptButton = (BaseText(Instance.new("TextButton")) :: any) :: TextButton & {
+	["TitleLabel"]: TextLabel,
+	["DeleteButton"]: ImageButton,
 }
 
-local function getPresets(): Presets
-	local presets = plugin:GetSetting("Presets")
-	if not presets then
-		return {
-			["Hello, World!"] = 'print("Hello, World!")',
+do
+	local deleteButton = BaseGui(Instance.new("ImageButton"), {
+		CornerRadius = UDim.new(0, 0),
+		Position = UDim2.fromScale(0.75, 0.5),
+		Size = UDim2.fromScale(0.25, 1),
+
+		AnchorPoint = Vector2.new(0, 0.5),
+
+		Transparency = 1,
+
+		Name = "DeleteButton",
+		Parent = savedScriptButton :: Instance,
+	})
+
+	deleteButton.ZIndex = 1
+	deleteButton.ImageContent = Content.fromAssetId(15921650550)
+	deleteButton.ImageColor3 = Color3.new(1, 1, 1)
+	deleteButton.ScaleType = Enum.ScaleType.Fit
+
+	BaseText(Instance.new("TextLabel"), {
+		BaseGui = {
+			CornerRadius = UDim.new(0, 0),
+			Size = UDim2.fromScale(1, 1),
+			PaddingParams = {
+				Left = UDim.new(0, 8),
+				Right = UDim.new(0.25, 16),
+				Top = UDim.new(0, 0),
+				Bottom = UDim.new(0, 0),
+			},
+
+			Transparency = 1,
+
+			Name = "TitleLabel",
+			Parent = savedScriptButton :: Instance,
 		}
-	end
-	return HttpService:JSONDecode(plugin:GetSetting("Presets"))
+	})
 end
 
-local function updatePreset(name: string, code: string?): ()
-	local presets = getPresets()
-	presets[name] = code
+local codeActionsFrame = BackgroundFrame({
+	PaddingParams = {
+		Left = UDim.new(0, 5),
+		Right = UDim.new(0, 5),
+		Top = UDim.new(0, 5),
+		Bottom = UDim.new(0, 5),
+	},
 
-	plugin:SetSetting("Presets", HttpService:JSONEncode(presets))
+	Size = UDim2.new(0.75, 0, 0.15, -5),
+	Position = UDim2.new(0.25, 0, 0.85, 5),
+
+	Name = "CodeActionsFrame",
+	Parent = frame,
+})
+
+local function loadPreset(name: string, shouldError: boolean?): ()
+	codeEditor.Text = Presets.LoadPreset(name) or if shouldError then error("Failed to load preset: " .. name) else ""
+	updateCurrentScript(name)
 end
 
-local function loadPreset(name: string): ()
-	local data = getPresets()
-	if not data then
-		return warn("Failed to load preset " .. name)
-	end
+loadPreset(currentScript)
 
-	local code = data[name]
-	if not code then
-		return warn("Failed to load preset " .. name)
-	end
+local function addSavedScript(name: string): ()
+	local button = savedScriptButton:Clone()
 
-	local preset = code
-	codeBox.Text = preset
-end
+	button.TitleLabel.Text = name
+	button.Name = name .. "_SavedScriptButton"
 
-local function createPresetButton(name: string): ()
-	local button = Instance.new("TextButton")
-	button.Name = "Preset_" .. name
+	button.Activated:Connect(function()
+		local code = codeEditor.Text
+		tryMarkAsUnsaved(code)
 
-	button.Font = Enum.Font.SourceSans
-	button.Text = name
-	
-	button.TextScaled = true
+		local response: Prompt.Response?
+		if isUnsaved then
+			Prompt.ShowConfirmationPrompt(frame, "Save Script", currentScript, true, function(confirmed)
+				response = confirmed
+			end)
 
-	do
-		local uiCorner = Instance.new("UICorner")
-		uiCorner.Parent = button
+			while response == nil do
+				task.wait()
+			end
 
-		local uiStroke = Instance.new("UIStroke")
-		uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		table.insert(colourSyncTargets, uiStroke)
-		syncOne(uiStroke, settings().Studio.Theme)
-		uiStroke.Parent = button
-	end
+			if response == "OK" then
+				Presets.UpdatePreset(currentScript, code)
+			end
+		else
+			response = "OK"
+		end
 
-	button.MouseButton1Click:Connect(function()
-		loadPreset(name)
+		if response ~= "Cancel" then
+			loadPreset(name, true)
+		end
 	end)
 
-	button.MouseButton2Click:Connect(function()
-		updatePreset(name, nil)
+	button.DeleteButton.Activated:Connect(function()
+		local response: boolean?
+		Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
+			response = confirmed == "OK"
+		end)
+
+		while response == nil do
+			task.wait()
+		end
+
+		if not response then
+			return
+		end
+
+		Presets.DeletePreset(name)
+		if name == currentScript then
+			tryMarkAsUnsaved(codeEditor.Text)
+		end
 		button:Destroy()
 	end)
 
-	table.insert(colourSyncTargets, button)
-	syncOne(button, settings().Studio.Theme)
-	button.Parent = presetsFrame
+	Style(button)
+	Style(button.TitleLabel)
+	button.Parent = savedScriptsFrame :: Instance
 end
 
-local function saveAsPreset(name: string)
-	if not getPresets()[name] then
-		createPresetButton(name)
+for name in Presets.GetPresets() do
+	addSavedScript(name)
+end
+
+local saveButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.fromScale(0, 0),
+
+		Name = "SaveButton",
+		Parent = codeActionsFrame :: Instance,
+	},
+
+	Text = "Save",
+	TextScaled = true,
+})
+
+saveButton.Activated:Connect(function()
+	local code = codeEditor.Text
+
+	local name: string | false?
+	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", currentScript, function(value: string?)
+		if value == nil then
+			name = false
+			return
+		end
+		name = value
+	end)
+
+	while name == nil do
+		task.wait()
 	end
-	updatePreset(name, codeBox.Text)
-end
 
-for i in getPresets() do
-	createPresetButton(i)
-end
-
-local saveAs = Instance.new("TextBox")
-saveAs.Name = "SaveAs"
-
-saveAs.Font = Enum.Font.SourceSans
-saveAs.Text = ""
-saveAs.PlaceholderText = "Save as..."
-
-saveAs.AnchorPoint = Vector2.new(0, 0.5)
-saveAs.Position = UDim2.new(0.575, -4, 0.9, 0)
-saveAs.Size = UDim2.fromScale(0.2, 0.15)
-saveAs.TextScaled = true
-
-do
-	local uiCorner = Instance.new("UICorner")
-    uiCorner.Parent = saveAs
-
-	local uiPadding = Instance.new("UIPadding")
-	uiPadding.PaddingBottom = UDim.new(0, 5)
-	uiPadding.PaddingTop = UDim.new(0, 5)
-	uiPadding.PaddingLeft = UDim.new(0, 5)
-	uiPadding.PaddingRight = UDim.new(0, 5)
-	uiPadding.Parent = saveAs
-
-	local uiStroke = Instance.new("UIStroke")
-    uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    table.insert(colourSyncTargets, uiStroke)
-    uiStroke.Parent = saveAs
-end
-
-table.insert(colourSyncTargets, saveAs)
-saveAs.Parent = frame
-
-saveAs.FocusLost:Connect(function(enterPressed)
-	if not enterPressed or saveAs.Text == "" then
+	if name == false or name == "" then
 		return
 	end
+	assert(name)
 
-	saveAsPreset(saveAs.Text)
+	local alreadyExists = Presets.GetPresets()[name] ~= nil
+
+	Presets.UpdatePreset(name, code)
+	updateCurrentScript(name)
+
+	tryMarkAsUnsaved(codeEditor.Text)
+
+	if not alreadyExists then
+		addSavedScript(name)
+	end
+end)
+
+local saveToDiskButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.new(0.25, 5, 0, 0),
+
+		Name = "SaveToDiskButton",
+		Parent = codeActionsFrame :: Instance,
+	},
+
+	Text = "Save to Disk",
+	TextScaled = true,
+})
+
+saveToDiskButton.Activated:Connect(function()
+	SaveToDisk(currentScript, codeEditor.Text)
+end)
+
+local executeButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.fromScale(0.75, 0),
+
+		Name = "ExecuteButton",
+		Parent = codeActionsFrame :: Instance,
+
+		Style = {
+			BackgroundColor3 = {
+				Color = Enum.StudioStyleGuideColor.MainButton,
+			},
+			TextColor3 = {
+				Color = Enum.StudioStyleGuideColor.BrightText,
+			},
+		}
+	},
+
+	Text = "Execute!",
+	TextScaled = true,
+})
+
+executeButton.Activated:Connect(function()
+	Execute(codeEditor.Text)
 end)
 
 frame.Parent = widget
-
-executeButton.Activated:Connect(function()
-	local recording: string?
-	
-	recording = ChangeHistoryService:TryBeginRecording("Execute commander code")
-	if not recording then
-		return warn("Unable to create undo waypoint, possibly due to another execution already in progress. Execution aborted.")
-	end
-
-	local code = codeBox.Text
-
-	local success, result = pcall(function(): (any, any)
-		local exec, err = loadstring(code)
-		if not exec then
-			return error(err or "Unknown error occured")
-		end
-		return exec()
-	end)
-
-	if not success then
-		warn(result)
-	end
-
-	if recording then
-		ChangeHistoryService:FinishRecording(recording, if success then Enum.FinishRecordingOperation.Commit else Enum.FinishRecordingOperation.Cancel)
-	end
-end)
-
-local function syncColours()
-	local theme = settings().Studio.Theme
-	for _, v in colourSyncTargets do
-		syncOne(v, theme)
-	end
-end
-
-syncColours()
-settings().Studio.ThemeChanged:Connect(syncColours)
 
 function module.ToggleWidget(enabled: boolean?): ()
 	widget.Enabled = if typeof(enabled) == "boolean" then enabled else not widget.Enabled
 
 	if widget.Enabled then
-		codeBox:CaptureFocus()
+		codeEditor:CaptureFocus()
 	end
 end
 
