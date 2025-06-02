@@ -81,6 +81,13 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 	TextScaled = true,
 })
 
+local function markAsUnsaved(newText: string): ()
+	if newText == Presets.LoadPreset(currentScript) then
+		return
+	end
+	editorTitle.Text = currentScript .. "*"
+end
+
 local function updateCurrentScript(new: string)
 	currentScript = new
 	editorTitle.Text = new
@@ -174,13 +181,19 @@ local lineNumbers = BaseText(Instance.new("TextLabel"), {
 	FontSize = 18,
 })
 
-codeEditor:GetPropertyChangedSignal("Text"):Connect(function()
-	local lineCount = #codeEditor.Text:split("\n")
+local function doLineNumbers(text: string): ()
+	local lineCount = #text:split("\n")
 
 	lineNumbers.Text = ""
 	for i = 1, lineCount do
 		lineNumbers.Text = lineNumbers.Text .. i .. "\n"
 	end
+end
+
+codeEditor:GetPropertyChangedSignal("Text"):Connect(function()
+	local text = codeEditor.Text
+	doLineNumbers(text)
+	markAsUnsaved(text)
 end)
 
 Highlighter.highlight({
