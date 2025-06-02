@@ -356,6 +356,7 @@ saveButton.Activated:Connect(function()
 	local alreadyExists = Presets.GetPresets()[name] ~= nil
 
 	Presets.UpdatePreset(name, code)
+	updateCurrentScript(name)
 
 	if not alreadyExists then
 		addSavedScript(name)
