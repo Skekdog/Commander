@@ -344,6 +344,9 @@ local function addSavedScript(name: string): ()
 		end
 
 		Presets.DeletePreset(name)
+		if name == currentScript then
+			tryMarkAsUnsaved(codeEditor.Text)
+		end
 		button:Destroy()
 	end)
 
