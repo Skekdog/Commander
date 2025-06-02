@@ -167,7 +167,7 @@ function module.ShowConfirmationPrompt(parent: Instance, title: string, message:
 	backgroundFrame.Parent = parent
 end
 
-function module.ShowInputPrompt(parent: Instance, title: string, placeholderText: string, onResponse: (value: string?) -> ()): ()
+function module.ShowInputPrompt(parent: Instance, title: string, placeholderText: string, initialText: string, onResponse: (value: string?) -> ()): ()
 	reset()
 
 	titleLabel.Text = title
@@ -181,6 +181,8 @@ function module.ShowInputPrompt(parent: Instance, title: string, placeholderText
 			Name = "InputBox",
 			Parent = frame :: Instance,
 		},
+
+		Text = initialText,
 
 		TextScaled = true,
 

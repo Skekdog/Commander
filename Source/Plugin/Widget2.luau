@@ -59,6 +59,8 @@ local editorFrame = BackgroundFrame({
 	Parent = frame,
 })
 
+local currentScript = "Untitled Script"
+
 local editorTitle = BaseText(Instance.new("TextLabel"), {
 	BaseGui = {
 		Size = UDim2.new(1, 0, 0.1, 8),
@@ -75,9 +77,14 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 		Parent = editorFrame :: Instance,
 	},
 
-	Text = "Untitled Script",
+	Text = currentScript,
 	TextScaled = true,
 })
+
+local function updateCurrentScript(new: string)
+	currentScript = new
+	editorTitle.Text = new
+end
 
 local scrollingFrame = ScrollFrame({
 	BaseGui = {
@@ -268,6 +275,13 @@ local codeActionsFrame = BackgroundFrame({
 	Parent = frame,
 })
 
+local function loadPreset(name: string, shouldError: boolean?): ()
+	codeEditor.Text = Presets.LoadPreset(name) or if shouldError then error("Failed to load preset: " .. name) else ""
+	updateCurrentScript(name)
+end
+
+loadPreset(currentScript)
+
 local function addSavedScript(name: string): ()
 	local button = savedScriptButton:Clone()
 
@@ -275,7 +289,7 @@ local function addSavedScript(name: string): ()
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
-		codeEditor.Text = Presets.LoadPreset(name) or error("Failed to load preset " .. name)
+		loadPreset(name, true)
 	end)
 
 	button.DeleteButton.Activated:Connect(function()
@@ -318,7 +332,7 @@ BaseText(Instance.new("TextButton"), {
 	TextScaled = true,
 }).Activated:Connect(function()
 	local name: string | false?
-	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", function(value: string?)
+	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", currentScript, function(value: string?)
 		if value == nil then
 			name = false
 			return
@@ -358,7 +372,7 @@ BaseText(Instance.new("TextButton"), {
 	Text = "Save to Disk",
 	TextScaled = true,
 }).Activated:Connect(function()
-	SaveToDisk("Script", codeEditor.Text)
+	SaveToDisk(currentScript, codeEditor.Text)
 end)
 
 BaseText(Instance.new("TextButton"), {

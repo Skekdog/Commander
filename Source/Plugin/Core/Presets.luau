@@ -42,7 +42,6 @@ function module.LoadPreset(name: string): string?
 
 	local code = data[name]
 	if not code then
-		warn("Failed to load preset " .. name)
 		return nil
 	end
 
