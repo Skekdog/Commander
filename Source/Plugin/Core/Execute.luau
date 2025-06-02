@@ -22,14 +22,6 @@ local function Execute(code: string): ()
 	end)
 
 	if not success then
-		if result == "loadstring() is not available" then
-			if RunService:IsClient() then
-				warn("Commander does not support client-side execution.")
-			else
-				warn("Commander requires ServerScriptService.LoadStringEnabled when running on the server.")
-			end
-			return
-		end
 		warn(result)
 	end
 
