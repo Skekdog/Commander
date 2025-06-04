@@ -159,9 +159,15 @@ local function setActiveScript(name: string): ()
 end
 
 local function openScript(scriptFile: Scripts.ScriptFile): ()
-	local editorScript = scriptFile.ScriptInstance or Instance.new("Script")
-	editorScript.Name = scriptFile.Name
-	scriptFile.ScriptInstance = editorScript
+	local editorScript: Script
+
+	local existingScript = scriptFile.ScriptInstance
+	if not existingScript then
+		editorScript = Instance.new("Script")
+		editorScript.Name = scriptFile.Name
+		scriptFile.ScriptInstance = editorScript
+	end
+
 	plugin:OpenScript(editorScript)
 end
 
