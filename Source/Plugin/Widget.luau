@@ -47,161 +47,6 @@ local frame = BackgroundFrame({
 	Parent = widget,
 })
 
-local editorFrame = BackgroundFrame({
-	CornerRadius = UDim.new(0, 0),
-
-	Position = UDim2.fromScale(0.25, 0),
-	Size = UDim2.fromScale(0.75, 0.85),
-
-	Transparency = 1,
-
-	Name = "EditorFrame",
-	Parent = frame,
-})
-
-local currentScript = "Untitled Script"
-
-local editorTitle = BaseText(Instance.new("TextLabel"), {
-	BaseGui = {
-		Size = UDim2.new(1, 0, 0.1, 8),
-		CornerRadius = UDim.new(0, 0),
-
-		PaddingParams = {
-			Left = UDim.new(0, 0),
-			Right = UDim.new(0, 0),
-			Top = UDim.new(0, 5),
-			Bottom = UDim.new(0, 13),
-		},
-
-		Name = "EditorTitle",
-		Parent = editorFrame :: Instance,
-	},
-
-	Text = currentScript,
-	TextScaled = true,
-})
-
-local isUnsaved = false
-local function tryMarkAsUnsaved(newText: string): ()
-	isUnsaved = newText ~= Presets.LoadPreset(currentScript)
-	if not isUnsaved then
-		return
-	end
-	editorTitle.Text = currentScript .. "*"
-end
-
-local function updateCurrentScript(new: string)
-	currentScript = new
-	editorTitle.Text = new
-end
-
-local scrollingFrame = ScrollFrame({
-	BaseGui = {
-		Size = UDim2.fromScale(1, 0.9),
-		Position = UDim2.fromScale(0, 0.1),
-
-		Name = "ScrollingFrame",
-		Parent = editorFrame :: Instance,
-
-		Style = {
-			BackgroundColor3 = {
-				Color = Enum.StudioStyleGuideColor.ScriptBackground,
-			}
-		},
-	},
-
-	ScrollingDirection = Enum.ScrollingDirection.XY,
-	AutomaticCanvasSize = Enum.AutomaticSize.XY,
-})
-
-local LINE_NUMBER_OFFSET_SIZE = 40
-
-local codeEditor = BaseText(Instance.new("TextBox"), {
-	BaseGui = {
-		CornerRadius = UDim.new(0, 0),
-		PaddingParams = {
-			Left = UDim.new(0, 8),
-			Top = UDim.new(0, 8),
-			Right = UDim.new(0, 0),
-			Bottom = UDim.new(0, 0),
-		},
-
-		AutomaticSize = Enum.AutomaticSize.XY,
-		Size = UDim2.new(1, -LINE_NUMBER_OFFSET_SIZE, 1, 0),
-		Position = UDim2.fromOffset(LINE_NUMBER_OFFSET_SIZE, 0),
-
-		Transparency = 1,
-
-		Name = "CodeEditor",
-		Parent = scrollingFrame :: Instance,
-	},
-
-	Font = Font.fromId(16658246179),
-
-	TextXAlignment = Enum.TextXAlignment.Left,
-	TextYAlignment = Enum.TextYAlignment.Top,
-
-	TextWrapped = false,
-	TextScaled = false,
-
-	FontSize = 18,
-})
-
-codeEditor.ClearTextOnFocus = false
-codeEditor.MultiLine = true
-
-local lineNumbers = BaseText(Instance.new("TextLabel"), {
-	BaseGui = {
-		CornerRadius = UDim.new(0, 0),
-		PaddingParams = {
-			Left = UDim.new(0, 8),
-			Top = UDim.new(0, 8),
-			Right = UDim.new(0, 0),
-			Bottom = UDim.new(0, 0),
-		},
-
-		Transparency = 1,
-
-		Size = UDim2.new(0, LINE_NUMBER_OFFSET_SIZE, 1, 0),
-		Position = UDim2.fromScale(0, 0),
-
-		Name = "LineNumbers",
-		Parent = scrollingFrame :: Instance,
-
-		AutomaticSize = Enum.AutomaticSize.Y,
-	},
-
-	TextXAlignment = Enum.TextXAlignment.Right,
-	TextYAlignment = Enum.TextYAlignment.Top,
-	TextScaled = false,
-	TextWrapped = false,
-
-	Font = Font.fromId(16658246179),
-
-	Text = "1",
-
-	FontSize = 18,
-})
-
-local function doLineNumbers(text: string): ()
-	local lineCount = #text:split("\n")
-
-	lineNumbers.Text = ""
-	for i = 1, lineCount do
-		lineNumbers.Text = lineNumbers.Text .. i .. "\n"
-	end
-end
-
-codeEditor:GetPropertyChangedSignal("Text"):Connect(function()
-	local text = codeEditor.Text
-	doLineNumbers(text)
-	tryMarkAsUnsaved(text)
-end)
-
-Highlighter.highlight({
-	textObject = codeEditor,
-})
-
 local savedScriptsFrame = ScrollFrame({
 	BaseGui = {
 		PaddingParams = {
@@ -210,7 +55,7 @@ local savedScriptsFrame = ScrollFrame({
 			Top = UDim.new(0, 2),
 			Bottom = UDim.new(0, 2),
 		},
-		Size = UDim2.fromScale(0.25, 1),
+		Size = UDim2.fromScale(0.5, 1),
 
 		Transparency = 1,
 
@@ -283,19 +128,54 @@ local codeActionsFrame = BackgroundFrame({
 		Bottom = UDim.new(0, 5),
 	},
 
-	Size = UDim2.new(0.75, 0, 0.15, -5),
-	Position = UDim2.new(0.25, 0, 0.85, 5),
+	Size = UDim2.fromScale(0.5, 1),
+	Position = UDim2.fromScale(0.5, 0),
 
 	Name = "CodeActionsFrame",
 	Parent = frame,
 })
 
-local function loadPreset(name: string, shouldError: boolean?): ()
-	codeEditor.Text = Presets.LoadPreset(name) or if shouldError then error("Failed to load preset: " .. name) else ""
-	updateCurrentScript(name)
+local currentScript = "Untitled Script"
+
+local editorTitle = BaseText(Instance.new("TextLabel"), {
+	BaseGui = {
+		Size = UDim2.new(1, 0, 0.1, 8),
+		CornerRadius = UDim.new(0, 0),
+
+		PaddingParams = {
+			Left = UDim.new(0, 0),
+			Right = UDim.new(0, 0),
+			Top = UDim.new(0, 5),
+			Bottom = UDim.new(0, 13),
+		},
+
+		Name = "EditorTitle",
+		Parent = codeActionsFrame,
+	},
+
+	Text = currentScript,
+	TextScaled = true,
+})
+
+local isUnsaved = false
+local function tryMarkAsUnsaved(newText: string): ()
+	isUnsaved = newText ~= Presets.LoadPreset(currentScript)
+	if not isUnsaved then
+		return
+	end
+	editorTitle.Text = currentScript .. "*"
 end
 
-loadPreset(currentScript)
+local function updateCurrentScript(new: string)
+	currentScript = new
+	editorTitle.Text = new
+end
+
+local function loadPreset(name: string, shouldError: boolean?): ()
+	local editorScript = Instance.new("Script")
+	editorScript.Name = name
+	plugin:OpenScript(editorScript)
+end
 
 local function addSavedScript(name: string): ()
 	local button = savedScriptButton:Clone()
@@ -361,8 +241,9 @@ end
 
 local saveButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.fromScale(0, 0),
+		Size = UDim2.fromScale(0.75, 0.1),
+		Position = UDim2.new(0.5, 0, 0.2, -10),
+		AnchorPoint = Vector2.new(0.5, 0),
 
 		Name = "SaveButton",
 		Parent = codeActionsFrame :: Instance,
@@ -407,8 +288,9 @@ end)
 
 local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.new(0.25, 5, 0, 0),
+		Size = UDim2.fromScale(0.75, 0.1),
+		Position = UDim2.new(0.5, 0, 0.3, -5),
+		AnchorPoint = Vector2.new(0.5, 0),
 
 		Name = "SaveToDiskButton",
 		Parent = codeActionsFrame :: Instance,
@@ -424,8 +306,9 @@ end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.25, 1),
-		Position = UDim2.fromScale(0.75, 0),
+		Size = UDim2.fromScale(0.75, 0.1),
+		Position = UDim2.new(0.5, 0, 0.5, 5),
+		AnchorPoint = Vector2.new(0.5, 0),
 
 		Name = "ExecuteButton",
 		Parent = codeActionsFrame :: Instance,
@@ -452,10 +335,6 @@ frame.Parent = widget
 
 function module.ToggleWidget(enabled: boolean?): ()
 	widget.Enabled = if typeof(enabled) == "boolean" then enabled else not widget.Enabled
-
-	if widget.Enabled then
-		codeEditor:CaptureFocus()
-	end
 end
 
 module.Widget = widget
