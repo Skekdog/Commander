@@ -2,6 +2,7 @@ local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
 local Presets = require("./Core/Presets")
 local SaveToDisk = require("./Core/SaveToDisk")
+local Scripts = require("./Core/Scripts")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
@@ -132,8 +133,6 @@ local codeActionsFrame = BackgroundFrame({
 	Parent = frame,
 })
 
-local currentScript = "Untitled Script"
-
 local editorTitle = BaseText(Instance.new("TextLabel"), {
 	BaseGui = {
 		Size = UDim2.new(1, 0, 0.1, 8),
@@ -150,27 +149,18 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 		Parent = codeActionsFrame,
 	},
 
-	Text = currentScript,
+	Text = Scripts.DEFAULT_SCRIPT.Source,
 	TextScaled = true,
 })
 
-local isUnsaved = false
-local function tryMarkAsUnsaved(newText: string): ()
-	isUnsaved = newText ~= Presets.LoadPreset(currentScript)
-	if not isUnsaved then
-		return
-	end
-	editorTitle.Text = currentScript .. "*"
+local function setActiveScript(name: string): ()
+	Scripts.ActiveScript = Scripts.GetScript(name) or error("Script not found: " .. name)
+	editorTitle.Text = name
 end
 
-local function updateCurrentScript(new: string)
-	currentScript = new
-	editorTitle.Text = new
-end
-
-local function loadPreset(name: string, shouldError: boolean?): ()
+local function openScript(scriptFile: Scripts.ScriptFile): ()
 	local editorScript = Instance.new("Script")
-	editorScript.Name = name
+	editorScript.Name = scriptFile.Name
 	plugin:OpenScript(editorScript)
 end
 
@@ -181,29 +171,9 @@ local function addSavedScript(name: string): ()
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
-		local code = codeEditor.Text
-		tryMarkAsUnsaved(code)
-
-		local response: Prompt.Response?
-		if isUnsaved then
-			Prompt.ShowConfirmationPrompt(frame, "Save Script", currentScript, true, function(confirmed)
-				response = confirmed
-			end)
-
-			while response == nil do
-				task.wait()
-			end
-
-			if response == "OK" then
-				Presets.UpdatePreset(currentScript, code)
-			end
-		else
-			response = "OK"
-		end
-
-		if response ~= "Cancel" then
-			loadPreset(name, true)
-		end
+		local scriptFile = Scripts.GetScript(name) or error("Script not found: " .. name)
+		setActiveScript(name)
+		openScript(scriptFile)
 	end)
 
 	button.DeleteButton.Activated:Connect(function()
@@ -221,9 +191,6 @@ local function addSavedScript(name: string): ()
 		end
 
 		Presets.DeletePreset(name)
-		if name == currentScript then
-			tryMarkAsUnsaved(codeEditor.Text)
-		end
 		button:Destroy()
 	end)
 
@@ -235,53 +202,6 @@ end
 for name in Presets.GetPresets() do
 	addSavedScript(name)
 end
-
-local saveButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(0.75, 0.1),
-		Position = UDim2.new(0.5, 0, 0.2, -10),
-		AnchorPoint = Vector2.new(0.5, 0),
-
-		Name = "SaveButton",
-		Parent = codeActionsFrame :: Instance,
-	},
-
-	Text = "Save",
-	TextScaled = true,
-})
-
-saveButton.Activated:Connect(function()
-	local code = codeEditor.Text
-
-	local name: string | false?
-	Prompt.ShowInputPrompt(frame, "Save Script", "Enter a name for the script", currentScript, function(value: string?)
-		if value == nil then
-			name = false
-			return
-		end
-		name = value
-	end)
-
-	while name == nil do
-		task.wait()
-	end
-
-	if name == false or name == "" then
-		return
-	end
-	assert(name)
-
-	local alreadyExists = Presets.GetPresets()[name] ~= nil
-
-	Presets.UpdatePreset(name, code)
-	updateCurrentScript(name)
-
-	tryMarkAsUnsaved(codeEditor.Text)
-
-	if not alreadyExists then
-		addSavedScript(name)
-	end
-end)
 
 local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
@@ -298,7 +218,7 @@ local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 })
 
 saveToDiskButton.Activated:Connect(function()
-	SaveToDisk(currentScript, codeEditor.Text)
+	SaveToDisk(Scripts.ActiveScript.Name, Scripts.ActiveScript.Source)
 end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
@@ -325,7 +245,7 @@ local executeButton = BaseText(Instance.new("TextButton"), {
 })
 
 executeButton.Activated:Connect(function()
-	Execute(codeEditor.Text)
+	Execute(Scripts.ActiveScript.Source)
 end)
 
 frame.Parent = widget
