@@ -3,6 +3,7 @@ export type ScriptFile = {
 	Name: string,
 	Source: string,
 	IsSaved: boolean,
+	ScriptInstance: Script?,
 }
 
 local module = {}
@@ -32,6 +33,7 @@ function module.AddScript(name: string, source: string): ()
 		Name = name,
 		Source = source,
 		IsSaved = true,
+		ScriptInstance = nil :: Script?,
 	}
 end
 
