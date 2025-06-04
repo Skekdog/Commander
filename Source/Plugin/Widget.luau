@@ -199,8 +199,8 @@ local function addSavedScript(name: string): ()
 	button.Parent = savedScriptsFrame :: Instance
 end
 
-for name in Presets.GetPresets() do
-	addSavedScript(name)
+for _, scriptFile in Scripts.GetScripts() do
+	addSavedScript(scriptFile.Name)
 end
 
 local saveToDiskButton = BaseText(Instance.new("TextButton"), {

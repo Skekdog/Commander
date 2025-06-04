@@ -7,18 +7,24 @@ export type ScriptFile = {
 
 local module = {}
 
-module.DEFAULT_SCRIPT = {
+local defaultScript: ScriptFile = {
 	Name = "Untitled Script",
 	Source = 'print("Hello, World!")',
 	IsSaved = false,
 }
 
-local scripts: {[string]: ScriptFile?} = {}
+module.DEFAULT_SCRIPT = defaultScript
 
-module.ActiveScript = module.DEFAULT_SCRIPT
+local scripts: {[string]: ScriptFile?} = {["Untitled Script"] = module.DEFAULT_SCRIPT}
+
+module.ActiveScript = module.DEFAULT_SCRIPT :: ScriptFile
 
 function module.GetScript(name: string): ScriptFile?
 	return scripts[name]
+end
+
+function module.GetScripts(): {[string]: ScriptFile}
+	return scripts :: {[string]: ScriptFile}
 end
 
 function module.AddScript(name: string, source: string): ()
