@@ -8,11 +8,8 @@ local BaseText = require("./UI/BaseText")
 local Prompt = require("./UI/Prompt")
 local ScrollFrame = require("./UI/ScrollFrame")
 local Style = require("./UI/Style")
-local Highlighter = require(script.Parent.Parent.Lib.Highlighter) -- Luau lsp doesn't correctly handle string requires with rojo projects yet (init files?) correctly yet
 
 local plugin = GetPlugin
-
-Highlighter.matchStudioSettings()
 
 local module = {}
 
