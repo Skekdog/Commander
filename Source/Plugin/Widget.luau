@@ -84,7 +84,7 @@ local addScriptButton = BaseText(Instance.new("TextButton"), {
 local savedScriptsScrollHolder = BackgroundFrame({
 	PaddingParams = {
 		Left = UDim.new(0, 2),
-		Right = UDim.new(0, 2),
+		Right = UDim.new(0, 0),
 		Top = UDim.new(0, 2),
 		Bottom = UDim.new(0, 2),
 	},
