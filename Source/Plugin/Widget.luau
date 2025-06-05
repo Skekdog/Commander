@@ -1,8 +1,8 @@
+local ScriptEditorService = game:GetService("ScriptEditorService")
 local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
 local Presets = require("./Core/Presets")
-local SaveToDisk = require("./Core/SaveToDisk")
-local Scripts = require("./Core/Scripts")
+local ActiveScripts = require("./Core/ActiveScripts")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
@@ -149,26 +149,17 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 		Parent = codeActionsFrame,
 	},
 
-	Text = Scripts.DEFAULT_SCRIPT.Source,
+	Text = "Select a script",
 	TextScaled = true,
 })
 
-local function setActiveScript(name: string): ()
-	Scripts.ActiveScript = Scripts.GetScript(name) or error("Script not found: " .. name)
-	editorTitle.Text = name
+local function setActiveScript(scriptFile: Script): ()
+	ActiveScripts.ActiveScript = scriptFile
+	editorTitle.Text = scriptFile.Name
 end
 
-local function openScript(scriptFile: Scripts.ScriptFile): ()
-	local editorScript: Script
-
-	local existingScript = scriptFile.ScriptInstance
-	if not existingScript then
-		editorScript = Instance.new("Script")
-		editorScript.Name = scriptFile.Name
-		scriptFile.ScriptInstance = editorScript
-	end
-
-	plugin:OpenScript(editorScript)
+local function openScript(scriptFile: Script): ()
+	plugin:OpenScript(scriptFile)
 end
 
 local function addSavedScript(name: string): ()
@@ -178,8 +169,8 @@ local function addSavedScript(name: string): ()
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
-		local scriptFile = Scripts.GetScript(name) or error("Script not found: " .. name)
-		setActiveScript(name)
+		local scriptFile = ActiveScripts.GetScript(name)
+		setActiveScript(scriptFile)
 		openScript(scriptFile)
 	end)
 
@@ -206,27 +197,9 @@ local function addSavedScript(name: string): ()
 	button.Parent = savedScriptsFrame :: Instance
 end
 
-for _, scriptFile in Scripts.GetScripts() do
+for _, scriptFile in ActiveScripts.GetScripts() do
 	addSavedScript(scriptFile.Name)
 end
-
-local saveToDiskButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(0.75, 0.1),
-		Position = UDim2.new(0.5, 0, 0.3, -5),
-		AnchorPoint = Vector2.new(0.5, 0),
-
-		Name = "SaveToDiskButton",
-		Parent = codeActionsFrame :: Instance,
-	},
-
-	Text = "Save to Disk",
-	TextScaled = true,
-})
-
-saveToDiskButton.Activated:Connect(function()
-	SaveToDisk(Scripts.ActiveScript.Name, Scripts.ActiveScript.Source)
-end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
@@ -252,7 +225,11 @@ local executeButton = BaseText(Instance.new("TextButton"), {
 })
 
 executeButton.Activated:Connect(function()
-	Execute(Scripts.ActiveScript.Source)
+	local activeScript = ActiveScripts.ActiveScript
+	if not activeScript then
+		return
+	end
+	Execute(ScriptEditorService:GetEditorSource(activeScript))
 end)
 
 frame.Parent = widget

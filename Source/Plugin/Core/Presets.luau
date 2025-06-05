@@ -1,6 +1,6 @@
 local HttpService = game:GetService("HttpService")
 local GetPlugin = require("../../Lib/GetPlugin")
-local Scripts = require("./Scripts")
+local ActiveScripts = require("./ActiveScripts")
 
 export type Presets = {
 	[string]: string,
@@ -50,7 +50,7 @@ function module.LoadPreset(name: string): string?
 end
 
 for name, code in module.GetPresets() do
-	Scripts.AddScript(name, code)
+	ActiveScripts.AddScript(name, code)
 end
 
 return module
