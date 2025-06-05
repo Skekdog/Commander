@@ -213,40 +213,6 @@ do
 	})
 end
 
-local function uiPromptDelete(scriptFile: Script): ()
-	local name = scriptFile.Name
-	local button = savedScriptsScroll:FindFirstChild(name .. "_SavedScriptButton")
-
-	if not button then
-		return
-	end
-
-	local response: boolean?
-	Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
-		response = confirmed == "OK"
-	end)
-
-	while response == nil do
-		task.wait()
-	end
-
-	if not response then
-		return
-	end
-
-	ActiveScripts.RemoveScript(name)
-	Presets.DeletePreset(name)
-	button:Destroy()
-end
-
-local function uiEdit(scriptFile: Script): ()
-	plugin:OpenScript(scriptFile)
-end
-
-local function uiExecute(scriptFile: Script): ()
-	Execute(ScriptEditorService:GetEditorSource(scriptFile))
-end
-
 local codeActionsFrame = BackgroundFrame({
 	PaddingParams = {
 		Left = UDim.new(0, 5),
@@ -281,9 +247,47 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 	TextScaled = true,
 })
 
-local function setActiveScript(scriptFile: Script): ()
+local function setActiveScript(scriptFile: Script?): ()
 	ActiveScripts.ActiveScript = scriptFile
-	editorTitle.Text = scriptFile.Name
+	editorTitle.Text = if scriptFile then scriptFile.Name else "Select a script"
+end
+
+local function uiPromptDelete(scriptFile: Script): ()
+	local name = scriptFile.Name
+	local button = savedScriptsScroll:FindFirstChild(name .. "_SavedScriptButton")
+
+	if not button then
+		return
+	end
+
+	local response: boolean?
+	Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
+		response = confirmed == "OK"
+	end)
+
+	while response == nil do
+		task.wait()
+	end
+
+	if not response then
+		return
+	end
+
+	ActiveScripts.RemoveScript(name)
+	Presets.DeletePreset(name)
+	button:Destroy()
+
+	if ActiveScripts.ActiveScript == scriptFile then
+		setActiveScript(nil)
+	end
+end
+
+local function uiEdit(scriptFile: Script): ()
+	plugin:OpenScript(scriptFile)
+end
+
+local function uiExecute(scriptFile: Script): ()
+	Execute(ScriptEditorService:GetEditorSource(scriptFile))
 end
 
 local function addSavedScript(scriptFile: Script): ()
