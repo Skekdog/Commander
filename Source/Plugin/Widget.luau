@@ -47,14 +47,12 @@ local frame = BackgroundFrame({
 
 local savedScriptsFrame = BackgroundFrame({
 	PaddingParams = {
-		Left = UDim.new(0, 2),
-		Right = UDim.new(0, 9),
-		Top = UDim.new(0, 2),
-		Bottom = UDim.new(0, 2),
+		Left = UDim.new(0, 5),
+		Right = UDim.new(0, 5),
+		Top = UDim.new(0, 5),
+		Bottom = UDim.new(0, 5),
 	},
-	Size = UDim2.fromScale(0.5, 1),
-
-	Transparency = 1,
+	Size = UDim2.new(0.5, -5, 1, 0),
 
 	AutomaticSize = Enum.AutomaticSize.Y,
 
