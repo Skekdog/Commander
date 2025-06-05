@@ -196,10 +196,10 @@ do
 	BaseText(Instance.new("TextLabel"), {
 		BaseGui = {
 			CornerRadius = UDim.new(0, 0),
-			Size = UDim2.fromScale(1, 1),
+			Size = UDim2.fromScale(0.625, 1),
 			PaddingParams = {
-				Left = UDim.new(0, 8),
-				Right = UDim.new(0.25, 16),
+				Left = UDim.new(0, 4),
+				Right = UDim.new(0, 4),
 				Top = UDim.new(0, 0),
 				Bottom = UDim.new(0, 0),
 			},
