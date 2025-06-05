@@ -268,6 +268,7 @@ editorTitle.FocusLost:Connect(function()
 
 	local newName = editorTitle.Text
 	if newName == "" or newName == "Select a script" or newName == scriptFile.Name or ActiveScripts.GetScripts()[newName] then
+		editorTitle.Text = scriptFile.Name
 		return
 	end
 
