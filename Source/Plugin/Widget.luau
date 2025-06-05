@@ -45,7 +45,45 @@ local frame = BackgroundFrame({
 	Parent = widget,
 })
 
-local savedScriptsFrame = ScrollFrame({
+local savedScriptsFrame = BackgroundFrame({
+	PaddingParams = {
+		Left = UDim.new(0, 2),
+		Right = UDim.new(0, 2),
+		Top = UDim.new(0, 2),
+		Bottom = UDim.new(0, 2),
+	},
+	Size = UDim2.fromScale(0.5, 1),
+
+	Transparency = 1,
+
+	AutomaticSize = Enum.AutomaticSize.Y,
+
+	Name = "SavedScriptsFrame",
+	Parent = frame :: Instance,
+})
+
+local addScriptButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(1, 0.1),
+		Position = UDim2.fromScale(0, 0.9),
+
+		Style = {
+			BackgroundColor3 = {
+				Color = Enum.StudioStyleGuideColor.MainButton,
+			},
+			TextColor3 = {
+				Color = Enum.StudioStyleGuideColor.BrightText,
+			},
+		},
+
+		Name = "AddScriptButton",
+		Parent = savedScriptsFrame :: Instance,
+	},
+
+	Text = "+",
+})
+
+local savedScriptsScroll = ScrollFrame({
 	BaseGui = {
 		PaddingParams = {
 			Left = UDim.new(0, 2),
@@ -53,14 +91,14 @@ local savedScriptsFrame = ScrollFrame({
 			Top = UDim.new(0, 2),
 			Bottom = UDim.new(0, 2),
 		},
-		Size = UDim2.fromScale(0.5, 1),
+		Size = UDim2.fromScale(1, 0.9),
 
 		Transparency = 1,
 
 		AutomaticSize = Enum.AutomaticSize.Y,
 
 		Name = "SavedScriptsFrame",
-		Parent = frame :: Instance,
+		Parent = savedScriptsFrame,
 	},
 
 	HorizontalScrollBarInset = Enum.ScrollBarInset.None,
@@ -72,7 +110,7 @@ do
 	gridLayout.CellSize = UDim2.fromScale(1, 0.1)
 	gridLayout.CellPadding = UDim2.fromOffset(5, 5)
 
-	gridLayout.Parent = savedScriptsFrame :: Instance
+	gridLayout.Parent = savedScriptsScroll :: Instance
 end
 
 local savedScriptButton = (BaseText(Instance.new("TextButton")) :: any) :: TextButton & {
@@ -193,7 +231,7 @@ local function addSavedScript(scriptFile: Script): ()
 
 	Style(button)
 	Style(button.TitleLabel)
-	button.Parent = savedScriptsFrame :: Instance
+	button.Parent = savedScriptsScroll :: Instance
 end
 
 local isFirst = true
