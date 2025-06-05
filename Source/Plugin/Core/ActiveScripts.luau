@@ -13,6 +13,13 @@ function module.GetScripts(): {[string]: Script}
 	return scripts :: {[string]: Script}
 end
 
+function module.RemoveScript(name: string): ()
+	local scriptFile = scripts[name]
+	assert(scriptFile, "Script not found: " .. name)
+	scripts[name] = nil
+	scriptFile:Destroy()
+end
+
 function module.AddScript(name: string, source: string): Script
 	assert(not scripts[name], "Script already exists: " .. name)
 	local scriptFile = Instance.new("Script")

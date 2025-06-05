@@ -95,8 +95,6 @@ local savedScriptsScroll = ScrollFrame({
 
 		Transparency = 1,
 
-		AutomaticSize = Enum.AutomaticSize.Y,
-
 		Name = "SavedScriptsFrame",
 		Parent = savedScriptsFrame,
 	},
@@ -225,6 +223,7 @@ local function addSavedScript(scriptFile: Script): ()
 			return
 		end
 
+		ActiveScripts.RemoveScript(name)
 		Presets.DeletePreset(name)
 		button:Destroy()
 	end)
