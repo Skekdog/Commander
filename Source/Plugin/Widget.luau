@@ -117,6 +117,7 @@ do
 
 	gridLayout.CellSize = UDim2.fromScale(1, 0.1)
 	gridLayout.CellPadding = UDim2.fromOffset(5, 5)
+	gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
 	gridLayout.Parent = savedScriptsScroll :: Instance
 end
