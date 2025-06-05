@@ -162,14 +162,15 @@ local function openScript(scriptFile: Script): ()
 	plugin:OpenScript(scriptFile)
 end
 
-local function addSavedScript(name: string): ()
+local function addSavedScript(scriptFile: Script): ()
+	local name = scriptFile.Name
+
 	local button = savedScriptButton:Clone()
 
 	button.TitleLabel.Text = name
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
-		local scriptFile = ActiveScripts.GetScript(name)
 		setActiveScript(scriptFile)
 		openScript(scriptFile)
 	end)
@@ -197,8 +198,13 @@ local function addSavedScript(name: string): ()
 	button.Parent = savedScriptsFrame :: Instance
 end
 
+local isFirst = true
 for _, scriptFile in ActiveScripts.GetScripts() do
-	addSavedScript(scriptFile.Name)
+	addSavedScript(scriptFile)
+	if isFirst then
+		setActiveScript(scriptFile)
+		isFirst = false
+	end
 end
 
 local executeButton = BaseText(Instance.new("TextButton"), {
