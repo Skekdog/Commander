@@ -16,8 +16,10 @@ end
 function module.AddScript(name: string, source: string): ()
 	local scriptFile = Instance.new("Script")
 	scriptFile.Source = source
+	scriptFile.Enabled = false
 	scriptFile.Name = name
 	scriptFile.Parent = script
+	scriptFile.Enabled = true -- if the script is enabled when parenting, it will run. after parenting it will not, and enabling it means the tab doesn't say [Disabled]
 	scripts[name] = scriptFile
 end
 

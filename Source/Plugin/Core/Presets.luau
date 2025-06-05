@@ -1,4 +1,5 @@
 local HttpService = game:GetService("HttpService")
+local ScriptEditorService = game:GetService("ScriptEditorService")
 local GetPlugin = require("../../Lib/GetPlugin")
 local ActiveScripts = require("./ActiveScripts")
 
@@ -52,5 +53,11 @@ end
 for name, code in module.GetPresets() do
 	ActiveScripts.AddScript(name, code)
 end
+
+plugin.Unloading:Connect(function()
+	for _, scriptFile in ActiveScripts.GetScripts() do
+		module.UpdatePreset(scriptFile.Name, ScriptEditorService:GetEditorSource(scriptFile))
+	end
+end)
 
 return module
