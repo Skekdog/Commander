@@ -213,6 +213,40 @@ do
 	})
 end
 
+local function uiPromptDelete(scriptFile: Script): ()
+	local name = scriptFile.Name
+	local button = savedScriptsScroll:FindFirstChild(name .. "_SavedScriptButton")
+
+	if not button then
+		return
+	end
+
+	local response: boolean?
+	Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
+		response = confirmed == "OK"
+	end)
+
+	while response == nil do
+		task.wait()
+	end
+
+	if not response then
+		return
+	end
+
+	ActiveScripts.RemoveScript(name)
+	Presets.DeletePreset(name)
+	button:Destroy()
+end
+
+local function uiEdit(scriptFile: Script): ()
+	plugin:OpenScript(scriptFile)
+end
+
+local function uiExecute(scriptFile: Script): ()
+	Execute(ScriptEditorService:GetEditorSource(scriptFile))
+end
+
 local codeActionsFrame = BackgroundFrame({
 	PaddingParams = {
 		Left = UDim.new(0, 5),
@@ -252,10 +286,6 @@ local function setActiveScript(scriptFile: Script): ()
 	editorTitle.Text = scriptFile.Name
 end
 
-local function openScript(scriptFile: Script): ()
-	plugin:OpenScript(scriptFile)
-end
-
 local function addSavedScript(scriptFile: Script): ()
 	local name = scriptFile.Name
 
@@ -265,26 +295,22 @@ local function addSavedScript(scriptFile: Script): ()
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
+		if ActiveScripts.ActiveScript == scriptFile then
+			uiEdit(scriptFile)
+		end
 		setActiveScript(scriptFile)
 	end)
 
 	button.DeleteButton.Activated:Connect(function()
-		local response: boolean?
-		Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
-			response = confirmed == "OK"
-		end)
+		uiPromptDelete(scriptFile)
+	end)
 
-		while response == nil do
-			task.wait()
-		end
+	button.RunButton.Activated:Connect(function()
+		uiExecute(scriptFile)
+	end)
 
-		if not response then
-			return
-		end
-
-		ActiveScripts.RemoveScript(name)
-		Presets.DeletePreset(name)
-		button:Destroy()
+	button.EditButton.Activated:Connect(function()
+		uiEdit(scriptFile)
 	end)
 
 	Style(button)
@@ -348,7 +374,7 @@ openButton.Activated:Connect(function()
 	if not ActiveScripts.ActiveScript then
 		return
 	end
-	openScript(ActiveScripts.ActiveScript)
+	uiEdit(ActiveScripts.ActiveScript)
 end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
@@ -374,11 +400,10 @@ local executeButton = BaseText(Instance.new("TextButton"), {
 })
 
 executeButton.Activated:Connect(function()
-	local activeScript = ActiveScripts.ActiveScript
-	if not activeScript then
+	if not ActiveScripts.ActiveScript then
 		return
 	end
-	Execute(ScriptEditorService:GetEditorSource(activeScript))
+	uiExecute(ActiveScripts.ActiveScript)
 end)
 
 frame.Parent = widget
