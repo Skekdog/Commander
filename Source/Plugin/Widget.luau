@@ -288,7 +288,7 @@ local function uiPromptDelete(scriptFile: Script): ()
 	end
 
 	local response: boolean?
-	Prompt.ShowConfirmationPrompt(frame, "Delete Script", name, false, function(confirmed)
+	Prompt.ShowConfirmationPrompt(widget, "Delete Script", name, function(confirmed)
 		response = confirmed == "OK"
 	end)
 
