@@ -13,7 +13,8 @@ function module.GetScripts(): {[string]: Script}
 	return scripts :: {[string]: Script}
 end
 
-function module.AddScript(name: string, source: string): ()
+function module.AddScript(name: string, source: string): Script
+	assert(not scripts[name], "Script already exists: " .. name)
 	local scriptFile = Instance.new("Script")
 	scriptFile.Source = source
 	scriptFile.Enabled = false
@@ -21,6 +22,7 @@ function module.AddScript(name: string, source: string): ()
 	scriptFile.Parent = script
 	scriptFile.Enabled = true -- if the script is enabled when parenting, it will run. after parenting it will not, and enabling it means the tab doesn't say [Disabled]
 	scripts[name] = scriptFile
+	return scriptFile
 end
 
 return module

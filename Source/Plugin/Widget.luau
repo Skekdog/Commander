@@ -48,7 +48,7 @@ local frame = BackgroundFrame({
 local savedScriptsFrame = BackgroundFrame({
 	PaddingParams = {
 		Left = UDim.new(0, 2),
-		Right = UDim.new(0, 2),
+		Right = UDim.new(0, 9),
 		Top = UDim.new(0, 2),
 		Bottom = UDim.new(0, 2),
 	},
@@ -233,6 +233,21 @@ local function addSavedScript(scriptFile: Script): ()
 	Style(button.TitleLabel)
 	button.Parent = savedScriptsScroll :: Instance
 end
+
+local UNTITLED_SCRIPT = "Untitled Script"
+addScriptButton.Activated:Connect(function()
+	local highestNumber: number?
+	for _, v in ActiveScripts.GetScripts() do
+		if v.Name:sub(1, #UNTITLED_SCRIPT) == UNTITLED_SCRIPT then
+			local number = tonumber(v.Name:sub(#UNTITLED_SCRIPT + 1)) or 0
+			if not highestNumber or number > highestNumber then
+				highestNumber = number
+			end
+		end
+	end
+
+	addSavedScript(ActiveScripts.AddScript("Untitled Script" .. (if highestNumber then highestNumber + 1 else ""), "print(\"Hello, world!\")"))
+end)
 
 local isFirst = true
 for _, scriptFile in ActiveScripts.GetScripts() do
