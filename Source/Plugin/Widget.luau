@@ -237,7 +237,7 @@ local editorTitle = BaseText(Instance.new("TextBox"), {
 			Left = UDim.new(0, 0),
 			Right = UDim.new(0, 0),
 			Top = UDim.new(0, 5),
-			Bottom = UDim.new(0, 13),
+			Bottom = UDim.new(0, 5),
 		},
 
 		Name = "EditorTitle",
