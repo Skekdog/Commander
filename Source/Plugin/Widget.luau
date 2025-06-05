@@ -123,29 +123,74 @@ do
 	gridLayout.Parent = savedScriptsScroll :: Instance
 end
 
-local savedScriptButton = (BaseText(Instance.new("TextButton")) :: any) :: TextButton & {
+local RUN_ICON = Content.fromAssetId(8517323790)
+local EDIT_ICON = Content.fromAssetId(15911231575)
+local DELETE_ICON = Content.fromAssetId(11768918600)
+
+local savedScriptButton = (BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		PaddingParams = {
+			Left = UDim.new(0, 1),
+			Right = UDim.new(0, 1),
+			Top = UDim.new(0, 1),
+			Bottom = UDim.new(0, 1),
+		}
+	}
+}) :: any) :: TextButton & {
 	["TitleLabel"]: TextLabel,
 	["DeleteButton"]: ImageButton,
+	["RunButton"]: ImageButton,
+	["EditButton"]: ImageButton,
 }
 
 do
 	local deleteButton = BaseGui(Instance.new("ImageButton"), {
 		CornerRadius = UDim.new(0, 0),
-		Position = UDim2.fromScale(0.75, 0.5),
-		Size = UDim2.fromScale(0.25, 1),
+		Position = UDim2.fromScale(0.875, 0.5),
+		Size = UDim2.fromScale(0.125, 1),
 
 		AnchorPoint = Vector2.new(0, 0.5),
 
 		Transparency = 1,
 
 		Name = "DeleteButton",
-		Parent = savedScriptButton :: Instance,
+		Parent = savedScriptButton,
 	})
 
-	deleteButton.ZIndex = 1
-	deleteButton.ImageContent = Content.fromAssetId(15921650550)
-	deleteButton.ImageColor3 = Color3.new(1, 1, 1)
+	deleteButton.ImageContent = DELETE_ICON
 	deleteButton.ScaleType = Enum.ScaleType.Fit
+
+	local runButton = BaseGui(Instance.new("ImageButton"), {
+		CornerRadius = UDim.new(0, 0),
+		Position = UDim2.fromScale(0.625, 0.5),
+		Size = UDim2.fromScale(0.125, 1),
+
+		AnchorPoint = Vector2.new(0, 0.5),
+
+		Transparency = 1,
+
+		Name = "RunButton",
+		Parent = savedScriptButton,
+	})
+
+	runButton.ImageContent = RUN_ICON
+	runButton.ScaleType = Enum.ScaleType.Fit
+
+	local editButton = BaseGui(Instance.new("ImageButton"), {
+		CornerRadius = UDim.new(0, 0),
+		Position = UDim2.fromScale(0.75, 0.5),
+		Size = UDim2.fromScale(0.125, 1),
+
+		AnchorPoint = Vector2.new(0, 0.5),
+
+		Transparency = 1,
+
+		Name = "EditButton",
+		Parent = savedScriptButton,
+	})
+
+	editButton.ImageContent = EDIT_ICON
+	editButton.ScaleType = Enum.ScaleType.Fit
 
 	BaseText(Instance.new("TextLabel"), {
 		BaseGui = {
@@ -162,7 +207,9 @@ do
 
 			Name = "TitleLabel",
 			Parent = savedScriptButton :: Instance,
-		}
+		},
+
+		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 end
 
@@ -242,6 +289,21 @@ local function addSavedScript(scriptFile: Script): ()
 
 	Style(button)
 	Style(button.TitleLabel)
+	Style(button.DeleteButton, {
+		ImageColor3 = {
+			Color = Enum.StudioStyleGuideColor.ErrorText,
+		}
+	})
+	Style(button.RunButton, {
+		ImageColor3 = {
+			Color = Enum.StudioStyleGuideColor.InfoText,
+		}
+	})
+	Style(button.EditButton, {
+		ImageColor3 = {
+			Color = Enum.StudioStyleGuideColor.BrightText,
+		}
+	})
 	button.Parent = savedScriptsScroll :: Instance
 end
 
