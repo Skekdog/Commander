@@ -83,24 +83,36 @@ local addScriptButton = BaseText(Instance.new("TextButton"), {
 	Text = "+",
 })
 
+local savedScriptsScrollHolder = BackgroundFrame({
+	PaddingParams = {
+		Left = UDim.new(0, 2),
+		Right = UDim.new(0, 2),
+		Top = UDim.new(0, 2),
+		Bottom = UDim.new(0, 2),
+	},
+	Size = UDim2.new(1, 0, 0.9, -5),
+	Transparency = 1,
+
+	Name = "SavedScriptsScrollHolder",
+	Parent = savedScriptsFrame :: Instance,
+})
+
+savedScriptsScrollHolder.ClipsDescendants = true
+
 local savedScriptsScroll = ScrollFrame({
 	BaseGui = {
-		PaddingParams = {
-			Left = UDim.new(0, 2),
-			Right = UDim.new(0, 2),
-			Top = UDim.new(0, 2),
-			Bottom = UDim.new(0, 2),
-		},
-		Size = UDim2.fromScale(1, 0.9),
+		Size = UDim2.fromScale(1, 1),
 
 		Transparency = 1,
 
 		Name = "SavedScriptsFrame",
-		Parent = savedScriptsFrame,
+		Parent = savedScriptsScrollHolder,
 	},
 
 	HorizontalScrollBarInset = Enum.ScrollBarInset.None,
 })
+
+savedScriptsScroll.ClipsDescendants = false
 
 do
 	local gridLayout = Instance.new("UIGridLayout")
