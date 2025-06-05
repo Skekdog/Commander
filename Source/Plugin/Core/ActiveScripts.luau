@@ -20,6 +20,13 @@ function module.RemoveScript(name: string): ()
 	scriptFile:Destroy()
 end
 
+function module.RenameScript(scriptFile: Script, newName: string): ()
+	assert(not scripts[newName], "Script already exists: " .. newName)
+	scripts[scriptFile.Name] = nil
+	scriptFile.Name = newName
+	scripts[newName] = scriptFile
+end
+
 function module.AddScript(name: string, source: string): Script
 	assert(not scripts[name], "Script already exists: " .. name)
 	local scriptFile = Instance.new("Script")

@@ -127,6 +127,13 @@ local RUN_ICON = Content.fromAssetId(8517323790)
 local EDIT_ICON = Content.fromAssetId(15911231575)
 local DELETE_ICON = Content.fromAssetId(11768918600)
 
+type SavedScriptButton = TextButton & {
+	["TitleLabel"]: TextLabel,
+	["DeleteButton"]: ImageButton,
+	["RunButton"]: ImageButton,
+	["EditButton"]: ImageButton,
+}
+
 local savedScriptButton = (BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		PaddingParams = {
@@ -136,12 +143,7 @@ local savedScriptButton = (BaseText(Instance.new("TextButton"), {
 			Bottom = UDim.new(0, 1),
 		}
 	}
-}) :: any) :: TextButton & {
-	["TitleLabel"]: TextLabel,
-	["DeleteButton"]: ImageButton,
-	["RunButton"]: ImageButton,
-	["EditButton"]: ImageButton,
-}
+}) :: any) :: SavedScriptButton
 
 do
 	local deleteButton = BaseGui(Instance.new("ImageButton"), {
@@ -228,7 +230,7 @@ local codeActionsFrame = BackgroundFrame({
 	Parent = frame,
 })
 
-local editorTitle = BaseText(Instance.new("TextLabel"), {
+local editorTitle = BaseText(Instance.new("TextBox"), {
 	BaseGui = {
 		Size = UDim2.new(1, 0, 0.1, 8),
 
@@ -247,10 +249,36 @@ local editorTitle = BaseText(Instance.new("TextLabel"), {
 	TextScaled = true,
 })
 
+editorTitle.PlaceholderText = "Enter a script name"
+editorTitle.PlaceholderColor3 = Color3.new(0.5, 0.5, 0.5)
+editorTitle.MultiLine = false
+editorTitle.ClearTextOnFocus = false
+
 local function setActiveScript(scriptFile: Script?): ()
 	ActiveScripts.ActiveScript = scriptFile
 	editorTitle.Text = if scriptFile then scriptFile.Name else "Select a script"
+	editorTitle.TextEditable = scriptFile ~= nil
 end
+
+editorTitle.FocusLost:Connect(function()
+	local scriptFile = ActiveScripts.ActiveScript
+	if not scriptFile then
+		return
+	end
+
+	local newName = editorTitle.Text
+	if newName == "" or newName == "Select a script" or newName == scriptFile.Name or ActiveScripts.GetScripts()[newName] then
+		return
+	end
+
+	local button = savedScriptsScroll:FindFirstChild(scriptFile.Name .. "_SavedScriptButton") :: SavedScriptButton?
+	if button ~= nil then
+		button.Name = newName .. "_SavedScriptButton"
+		button.TitleLabel.Text = newName
+	end
+
+	ActiveScripts.RenameScript(scriptFile, newName)
+end)
 
 local function uiPromptDelete(scriptFile: Script): ()
 	local name = scriptFile.Name
