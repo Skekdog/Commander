@@ -136,7 +136,6 @@ local codeActionsFrame = BackgroundFrame({
 local editorTitle = BaseText(Instance.new("TextLabel"), {
 	BaseGui = {
 		Size = UDim2.new(1, 0, 0.1, 8),
-		CornerRadius = UDim.new(0, 0),
 
 		PaddingParams = {
 			Left = UDim.new(0, 0),
@@ -172,7 +171,6 @@ local function addSavedScript(scriptFile: Script): ()
 
 	button.Activated:Connect(function()
 		setActiveScript(scriptFile)
-		openScript(scriptFile)
 	end)
 
 	button.DeleteButton.Activated:Connect(function()
@@ -207,6 +205,26 @@ for _, scriptFile in ActiveScripts.GetScripts() do
 	end
 end
 
+local openButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.75, 0.1),
+		Position = UDim2.new(0.5, 0, 0.4, 0),
+		AnchorPoint = Vector2.new(0.5, 0),
+
+		Name = "OpenButton",
+		Parent = codeActionsFrame :: Instance,
+	},
+
+	Text = "Open",
+})
+
+openButton.Activated:Connect(function()
+	if not ActiveScripts.ActiveScript then
+		return
+	end
+	openScript(ActiveScripts.ActiveScript)
+end)
+
 local executeButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.75, 0.1),
@@ -227,7 +245,6 @@ local executeButton = BaseText(Instance.new("TextButton"), {
 	},
 
 	Text = "Execute!",
-	TextScaled = true,
 })
 
 executeButton.Activated:Connect(function()
