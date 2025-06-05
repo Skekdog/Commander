@@ -377,7 +377,9 @@ addScriptButton.Activated:Connect(function()
 		end
 	end
 
-	addSavedScript(ActiveScripts.AddScript("Untitled Script" .. (if highestNumber then highestNumber + 1 else ""), "print(\"Hello, world!\")"))
+	local newScript = ActiveScripts.AddScript("Untitled Script" .. (if highestNumber then highestNumber + 1 else ""), "print(\"Hello, world!\")")
+	addSavedScript(newScript)
+	setActiveScript(newScript)
 end)
 
 local isFirst = true
