@@ -253,7 +253,7 @@ editorTitle.PlaceholderColor3 = Color3.new(0.5, 0.5, 0.5)
 editorTitle.MultiLine = false
 editorTitle.ClearTextOnFocus = false
 
-local function setActiveScript(scriptFile: Script?): ()
+local function setActiveScript(scriptFile: ModuleScript?): ()
 	ActiveScripts.ActiveScript = scriptFile
 	editorTitle.Text = if scriptFile then scriptFile.Name else "Select a script"
 	editorTitle.TextEditable = scriptFile ~= nil
@@ -280,7 +280,7 @@ editorTitle.FocusLost:Connect(function()
 	ActiveScripts.RenameScript(scriptFile, newName)
 end)
 
-local function uiPromptDelete(scriptFile: Script): ()
+local function uiPromptDelete(scriptFile: ModuleScript): ()
 	local name = scriptFile.Name
 	local button = savedScriptsScroll:FindFirstChild(name .. "_SavedScriptButton")
 
@@ -310,15 +310,15 @@ local function uiPromptDelete(scriptFile: Script): ()
 	end
 end
 
-local function uiEdit(scriptFile: Script): ()
+local function uiEdit(scriptFile: ModuleScript): ()
 	plugin:OpenScript(scriptFile)
 end
 
-local function uiExecute(scriptFile: Script): ()
+local function uiExecute(scriptFile: ModuleScript): ()
 	Execute(ScriptEditorService:GetEditorSource(scriptFile))
 end
 
-local function addSavedScript(scriptFile: Script): ()
+local function addSavedScript(scriptFile: ModuleScript): ()
 	local name = scriptFile.Name
 
 	local button = savedScriptButton:Clone()

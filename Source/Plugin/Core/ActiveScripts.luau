@@ -1,16 +1,16 @@
 
 local module = {}
 
-local scripts: {[string]: Script?} = {}
+local scripts: {[string]: ModuleScript?} = {}
 
-module.ActiveScript = nil :: Script?
+module.ActiveScript = nil :: ModuleScript?
 
-function module.GetScript(name: string): Script
+function module.GetScript(name: string): ModuleScript
 	return scripts[name] or error("Script not found: " .. name)
 end
 
-function module.GetScripts(): {[string]: Script}
-	return scripts :: {[string]: Script}
+function module.GetScripts(): {[string]: ModuleScript}
+	return scripts :: {[string]: ModuleScript}
 end
 
 function module.RemoveScript(name: string): ()
@@ -20,21 +20,19 @@ function module.RemoveScript(name: string): ()
 	scriptFile:Destroy()
 end
 
-function module.RenameScript(scriptFile: Script, newName: string): ()
+function module.RenameScript(scriptFile: ModuleScript, newName: string): ()
 	assert(not scripts[newName], "Script already exists: " .. newName)
 	scripts[scriptFile.Name] = nil
 	scriptFile.Name = newName
 	scripts[newName] = scriptFile
 end
 
-function module.AddScript(name: string, source: string): Script
+function module.AddScript(name: string, source: string): ModuleScript
 	assert(not scripts[name], "Script already exists: " .. name)
-	local scriptFile = Instance.new("Script")
+	local scriptFile = Instance.new("ModuleScript")
 	scriptFile.Source = source
-	scriptFile.Enabled = false
 	scriptFile.Name = name
 	scriptFile.Parent = script
-	scriptFile.Enabled = true -- if the script is enabled when parenting, it will run. after parenting it will not, and enabling it means the tab doesn't say [Disabled]
 	scripts[name] = scriptFile
 	return scriptFile
 end

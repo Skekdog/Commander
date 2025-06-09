@@ -5,7 +5,7 @@ local GetPlugin = require("../../Lib/GetPlugin")
 local function SaveToDisk(name: string, code: string): ()
 	local lastSelection = Selection:Get()
 
-	local newScript = Instance.new("Script")
+	local newScript = Instance.new("ModuleScript")
 	newScript.Source = code
 	newScript.Parent = RunService
 
