@@ -1,18 +1,12 @@
-local RunService = game:GetService("RunService")
 local Selection = game:GetService("Selection")
 local GetPlugin = require("../../Lib/GetPlugin")
 
-local function SaveToDisk(name: string, code: string): ()
+local function SaveToDisk(scriptFile: ModuleScript): ()
 	local lastSelection = Selection:Get()
 
-	local newScript = Instance.new("ModuleScript")
-	newScript.Source = code
-	newScript.Parent = RunService
+	Selection:Set({scriptFile})
+	GetPlugin:PromptSaveSelection(scriptFile.Name)
 
-	Selection:Set({newScript})
-	GetPlugin:PromptSaveSelection(name)
-
-	newScript:Destroy()
 	Selection:Set(lastSelection)
 end
 

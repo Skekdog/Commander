@@ -3,6 +3,7 @@ local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
 local Presets = require("./Core/Presets")
 local ActiveScripts = require("./Core/ActiveScripts")
+local SaveToDisk = require("./Core/SaveToDisk")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
@@ -318,6 +319,10 @@ local function uiExecute(scriptFile: ModuleScript): ()
 	Execute(ScriptEditorService:GetEditorSource(scriptFile))
 end
 
+local function uiSaveToDisk(scriptFile: ModuleScript): ()
+	SaveToDisk(scriptFile)
+end
+
 local function addSavedScript(scriptFile: ModuleScript): ()
 	local name = scriptFile.Name
 
@@ -394,7 +399,7 @@ end
 local openButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.75, 0.1),
-		Position = UDim2.new(0.5, 0, 0.4, 0),
+		Position = UDim2.new(0.5, 0, 0.3, -5),
 		AnchorPoint = Vector2.new(0.5, 0),
 
 		Name = "OpenButton",
@@ -409,6 +414,26 @@ openButton.Activated:Connect(function()
 		return
 	end
 	uiEdit(ActiveScripts.ActiveScript)
+end)
+
+local saveToDiskButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(0.75, 0.1),
+		Position = UDim2.new(0.5, 0, 0.4, 0),
+		AnchorPoint = Vector2.new(0.5, 0),
+
+		Name = "SaveToDiskButton",
+		Parent = codeActionsFrame,
+	},
+
+	Text = "Save to Disk",
+})
+
+saveToDiskButton.Activated:Connect(function()
+	if not ActiveScripts.ActiveScript then
+		return
+	end
+	uiSaveToDisk(ActiveScripts.ActiveScript)
 end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
