@@ -1,7 +1,12 @@
+local CoreGui = game:GetService("CoreGui")
 
 local module = {}
 
 local scripts: {[string]: ModuleScript?} = {}
+
+module.ScriptFolder = CoreGui:FindFirstChild("CommanderScripts") or Instance.new("Folder")
+module.ScriptFolder.Name = "CommanderScripts"
+module.ScriptFolder.Parent = CoreGui
 
 module.ActiveScript = nil :: ModuleScript?
 
@@ -32,7 +37,7 @@ function module.AddScript(name: string, source: string): ModuleScript
 	local scriptFile = Instance.new("ModuleScript")
 	scriptFile.Source = source
 	scriptFile.Name = name
-	scriptFile.Parent = script
+	scriptFile.Parent = module.ScriptFolder
 	scripts[name] = scriptFile
 	return scriptFile
 end
