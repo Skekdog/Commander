@@ -127,6 +127,9 @@ local function reset(): ()
 		messageObject:Destroy()
 	end
 
+	confirmButton.Text = "OK"
+	cancelButton.Text = "Cancel"
+
 	backgroundFrame.Visible = false
 	backgroundFrame.Parent = nil
 end
@@ -138,7 +141,7 @@ local function runAndClose<T>(callback: (value: T) -> (), value: T): (...any) ->
 	end
 end
 
-function module.ShowConfirmationPrompt(widget: DockWidgetPluginGui, title: string, message: string, onResponse: (response: Response) -> ()): ()
+function module.ShowConfirmationPrompt(widget: DockWidgetPluginGui, title: string, message: string, onResponse: (response: Response) -> (), okText: string?, cancelText: string?): ()
 	reset()
 
 	titleLabel.Text = title
@@ -159,6 +162,14 @@ function module.ShowConfirmationPrompt(widget: DockWidgetPluginGui, title: strin
 
 		Colour = Color3.new(0.5, 0.5, 0.5),
 	})
+
+	if okText then
+		confirmButton.Text = okText
+	end
+
+	if cancelText then
+		cancelButton.Text = cancelText
+	end
 
 	messageObject = messageLabel
 

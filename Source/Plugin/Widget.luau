@@ -3,6 +3,7 @@ local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
 local Presets = require("./Core/Presets")
 local ActiveScripts = require("./Core/ActiveScripts")
+local CodeContainsDestroy = require("./Core/CodeContainsDestroy")
 local SaveToDisk = require("./Core/SaveToDisk")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
@@ -316,7 +317,16 @@ local function uiEdit(scriptFile: ModuleScript): ()
 end
 
 local function uiExecute(scriptFile: ModuleScript): ()
-	Execute(ScriptEditorService:GetEditorSource(scriptFile))
+	local code = ScriptEditorService:GetEditorSource(scriptFile)
+	if CodeContainsDestroy(code) then
+		Prompt.ShowConfirmationPrompt(widget, "Warning", "Script contains possible usage of Instance:Destroy(), this cannot be undone! Consider using Instance.Parent = nil instead.", function(response)
+			if response == "OK" then
+				Execute(code)
+			end
+		end, "Execute Anyway")
+		return
+	end
+	Execute(code)
 end
 
 local function uiSaveToDisk(scriptFile: ModuleScript): ()
