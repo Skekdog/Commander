@@ -14,7 +14,7 @@ local function Execute(code: string): ()
 	local success, result = pcall(function(): any
 		local newScript = Instance.new("ModuleScript")
 
-		local withReturn = code .. " return nil"
+		local withReturn = code .. "\nreturn nil" -- Newline so that any comments on the last line don't mess things up
 		newScript.Source = withReturn;
 		(require)(newScript)
 
