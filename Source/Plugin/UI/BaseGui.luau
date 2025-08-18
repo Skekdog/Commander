@@ -1,5 +1,6 @@
 local AddCorners = require("./AddEffects/AddCorners")
 local AddPadding = require("./AddEffects/AddPadding")
+local AddSizeConstraints = require("./AddEffects/AddSizeConstraints")
 local AddStroke = require("./AddEffects/AddStroke")
 local Style = require("./Style")
 
@@ -12,6 +13,13 @@ export type BaseGuiParams = {
 	Size: UDim2?,
 	Position: UDim2?,
 	AnchorPoint: Vector2?,
+
+	SizeConstraints: {
+		Min: Vector2?,
+		Max: Vector2?,
+	}?,
+
+	LayoutOrder: number?,
 
 	Visible: boolean?,
 
@@ -47,12 +55,20 @@ local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
 		gui.AnchorPoint = params.AnchorPoint
 	end
 
+	if params.LayoutOrder then
+		gui.LayoutOrder = params.LayoutOrder
+	end
+
 	gui.Visible = if params.Visible == nil then true else params.Visible
 
 	if not params.CornerRadius then
 		AddCorners(gui, UDim.new(0, 8))
 	elseif params.CornerRadius.Scale ~= 0 or params.CornerRadius.Offset ~= 0 then
 		AddCorners(gui, params.CornerRadius or UDim.new(0, 8))
+	end
+
+	if params.SizeConstraints then
+		AddSizeConstraints(gui, params.SizeConstraints.Min, params.SizeConstraints.Max)
 	end
 
 	if params.Name then

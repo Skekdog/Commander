@@ -43,9 +43,20 @@ local frame = BackgroundFrame({
 
 	Size = UDim2.fromScale(1, 1),
 
+	LayoutOrder = -1,
+
 	Name = "MainFrame", -- we're hacking into the mainframe!!!
 	Parent = widget,
 })
+
+do
+	local listLayout = Instance.new("UIListLayout")
+	listLayout.FillDirection = Enum.FillDirection.Horizontal
+	listLayout.HorizontalFlex = Enum.UIFlexAlignment.Fill
+	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	listLayout.Padding = UDim.new(0, 4)
+	listLayout.Parent = frame
+end
 
 local savedScriptsFrame = BackgroundFrame({
 	PaddingParams = {
@@ -55,8 +66,6 @@ local savedScriptsFrame = BackgroundFrame({
 		Bottom = UDim.new(0, 5),
 	},
 	Size = UDim2.new(0.5, -5, 1, 0),
-
-	AutomaticSize = Enum.AutomaticSize.Y,
 
 	Name = "SavedScriptsFrame",
 	Parent = frame :: Instance,
@@ -226,6 +235,10 @@ local codeActionsFrame = BackgroundFrame({
 
 	Size = UDim2.fromScale(0.5, 1),
 	Position = UDim2.fromScale(0.5, 0),
+
+	SizeConstraints = {
+		Max = Vector2.new(250, math.huge),
+	},
 
 	Name = "CodeActionsFrame",
 	Parent = frame,
