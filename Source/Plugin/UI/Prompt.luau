@@ -15,6 +15,8 @@ local backgroundFrame = BackgroundFrame({
 	Position = UDim2.fromScale(0.5, 0.5),
 	AnchorPoint = Vector2.new(0.5, 0.5),
 
+	ZIndex = 9,
+
 	Transparency = 0.5,
 
 	NoStyle = true,
@@ -36,6 +38,8 @@ local frame = BackgroundFrame({
 		Bottom = UDim.new(0, 4),
 	},
 
+	ZIndex = 10,
+
 	Size = UDim2.fromScale(0.5, 0.5),
 	Position = UDim2.fromScale(0.5, 0.5),
 	AnchorPoint = Vector2.new(0.5, 0.5),
@@ -51,6 +55,8 @@ local titleLabel = BaseText(Instance.new("TextLabel"), {
 		Transparency = 1,
 		Size = UDim2.fromScale(1, 0.25),
 
+		ZIndex = 11,
+
 		Name = "TitleLabel",
 		Parent = frame :: Instance,
 	},
@@ -63,6 +69,8 @@ local responsesFrame = BaseGui(Instance.new("Frame"), {
 		Top = UDim.new(0.25, 0),
 		Bottom = UDim.new(0.25, 0),
 	},
+
+	ZIndex = 11,
 
 	Size = UDim2.fromScale(1, 0.5),
 	Position = UDim2.fromScale(0, 0.5),
@@ -84,6 +92,8 @@ local confirmButton = BaseText(AddStroke(Instance.new("TextButton")), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.5, 1),
 
+		ZIndex = 12,
+
 		Name = "ConfirmButton",
 		Parent = responsesFrame :: Instance,
 
@@ -103,6 +113,8 @@ local confirmButton = BaseText(AddStroke(Instance.new("TextButton")), {
 local cancelButton = BaseText(AddStroke(Instance.new("TextButton")), {
 	BaseGui = {
 		Size = UDim2.fromScale(0.5, 1),
+
+		ZIndex = 12,
 
 		Name = "CancelButton",
 		Parent = responsesFrame :: Instance,
@@ -151,6 +163,8 @@ function module.ShowConfirmationPrompt(widget: DockWidgetPluginGui, title: strin
 			Transparency = 1,
 			Position = UDim2.fromScale(0, 0.25),
 			Size = UDim2.fromScale(1, 0.25),
+
+			ZIndex = 11,
 
 			Name = "MessageLabel",
 			Parent = frame :: Instance,
