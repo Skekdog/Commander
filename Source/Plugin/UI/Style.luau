@@ -20,7 +20,7 @@ local function sync(gui: StyleTarget, style: Style, theme: StudioTheme): ()
 	elseif gui:IsA("ScrollingFrame") then
 		gui.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground)
 		gui.BorderColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Border)
-		gui.ScrollBarImageColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Border) -- there is a dedicated ScrollBar colour, but it's no good on light mode.
+		gui.ScrollBarImageColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainText) -- there is a dedicated ScrollBar colour, but it's bad and doesn't contrast well
 	else
 		gui.BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground)
 	end
