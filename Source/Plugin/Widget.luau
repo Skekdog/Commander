@@ -20,10 +20,10 @@ local widget = plugin:CreateDockWidgetPluginGui("Commander", DockWidgetPluginGui
 	Enum.InitialDockState.Float,
 	false,
 	true,
-	800,
-	400,
 	600,
-	350
+	350,
+	250,
+	150
 	)
 )
 
