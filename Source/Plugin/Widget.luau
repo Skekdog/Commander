@@ -5,6 +5,8 @@ local Presets = require("./Core/Presets")
 local ActiveScripts = require("./Core/ActiveScripts")
 local CodeContainsDestroy = require("./Core/CodeContainsDestroy")
 local SaveToDisk = require("./Core/SaveToDisk")
+local AddAspectRatio = require("./UI/AddEffects/AddAspectRatio")
+local AddListLayout = require("./UI/AddEffects/AddListLayout")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
@@ -74,7 +76,12 @@ local savedScriptsFrame = BackgroundFrame({
 local addScriptButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(1, 0.1),
-		Position = UDim2.fromScale(0, 0.9),
+		Position = UDim2.fromScale(0, 1),
+		AnchorPoint = Vector2.new(0, 1),
+
+		SizeConstraints = {
+			Max = Vector2.new(math.huge, 40),
+		},
 
 		Style = {
 			BackgroundColor3 = {
@@ -124,10 +131,9 @@ local savedScriptsScroll = ScrollFrame({
 savedScriptsScroll.ClipsDescendants = false
 
 do
-	local gridLayout = Instance.new("UIGridLayout")
+	local gridLayout = Instance.new("UIListLayout")
 
-	gridLayout.CellSize = UDim2.fromScale(1, 0.1)
-	gridLayout.CellPadding = UDim2.fromOffset(5, 5)
+	gridLayout.Padding = UDim.new(0, 5)
 	gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
 	gridLayout.Parent = savedScriptsScroll :: Instance
@@ -148,20 +154,34 @@ local savedScriptButton = (BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		PaddingParams = {
 			Left = UDim.new(0, 1),
-			Right = UDim.new(0, 1),
+			Right = UDim.new(0, 9),
 			Top = UDim.new(0, 1),
 			Bottom = UDim.new(0, 1),
-		}
+		},
+
+		SizeConstraints = {
+			Max = Vector2.new(math.huge, 35),
+			Min = Vector2.new(0, 15),
+		},
+
+		Size = UDim2.fromScale(1, 0.1),
 	}
 }) :: any) :: SavedScriptButton
+
+AddListLayout(savedScriptButton, {
+	FillDirection = Enum.FillDirection.Horizontal,
+	HorizontalAlignment = Enum.HorizontalAlignment.Right,
+	HorizontalFlex = Enum.UIFlexAlignment.Fill,
+	VerticalAlignment = Enum.VerticalAlignment.Center,
+	Padding = UDim.new(0, 4),
+})
 
 do
 	local deleteButton = BaseGui(Instance.new("ImageButton"), {
 		CornerRadius = UDim.new(0, 0),
-		Position = UDim2.fromScale(0.875, 0.5),
 		Size = UDim2.fromScale(0.125, 1),
 
-		AnchorPoint = Vector2.new(0, 0.5),
+		LayoutOrder = 3,
 
 		Transparency = 1,
 
@@ -169,15 +189,16 @@ do
 		Parent = savedScriptButton,
 	})
 
+	AddAspectRatio(deleteButton)
+
 	deleteButton.ImageContent = DELETE_ICON
 	deleteButton.ScaleType = Enum.ScaleType.Fit
 
 	local runButton = BaseGui(Instance.new("ImageButton"), {
 		CornerRadius = UDim.new(0, 0),
-		Position = UDim2.fromScale(0.625, 0.5),
 		Size = UDim2.fromScale(0.125, 1),
 
-		AnchorPoint = Vector2.new(0, 0.5),
+		LayoutOrder = 1,
 
 		Transparency = 1,
 
@@ -185,21 +206,24 @@ do
 		Parent = savedScriptButton,
 	})
 
+	AddAspectRatio(runButton)
+
 	runButton.ImageContent = RUN_ICON
 	runButton.ScaleType = Enum.ScaleType.Fit
 
 	local editButton = BaseGui(Instance.new("ImageButton"), {
 		CornerRadius = UDim.new(0, 0),
-		Position = UDim2.fromScale(0.75, 0.5),
 		Size = UDim2.fromScale(0.125, 1),
 
-		AnchorPoint = Vector2.new(0, 0.5),
+		LayoutOrder = 2,
 
 		Transparency = 1,
 
 		Name = "EditButton",
 		Parent = savedScriptButton,
 	})
+
+	AddAspectRatio(editButton)
 
 	editButton.ImageContent = EDIT_ICON
 	editButton.ScaleType = Enum.ScaleType.Fit
@@ -244,9 +268,21 @@ local codeActionsFrame = BackgroundFrame({
 	Parent = frame,
 })
 
+AddListLayout(codeActionsFrame, {
+	Padding = UDim.new(0, 5),
+	VerticalAlignment = Enum.VerticalAlignment.Top,
+	HorizontalAlignment = Enum.HorizontalAlignment.Left,
+	FillDirection = Enum.FillDirection.Vertical,
+	VerticalFlex = Enum.UIFlexAlignment.Fill,
+})
+
 local editorTitle = BaseText(Instance.new("TextBox"), {
 	BaseGui = {
 		Size = UDim2.new(1, 0, 0.1, 8),
+
+		SizeConstraints = {
+			Max = Vector2.new(math.huge, 50),
+		},
 
 		PaddingParams = {
 			Left = UDim.new(0, 0),
@@ -257,6 +293,8 @@ local editorTitle = BaseText(Instance.new("TextBox"), {
 
 		Name = "EditorTitle",
 		Parent = codeActionsFrame,
+
+		LayoutOrder = 1,
 	},
 
 	Text = "Select a script",
@@ -419,14 +457,34 @@ for _, scriptFile in ActiveScripts.GetScripts() do
 	end
 end
 
+local actionsFrame = BackgroundFrame({
+	Transparency = 1,
+	Size = UDim2.fromScale(1, 0.4),
+	Position = UDim2.new(0, 0, 0.1, 16),
+
+	SizeConstraints = {
+		Max = Vector2.new(math.huge, 120),
+	},
+
+	LayoutOrder = 2,
+
+	Name = "Actions",
+	Parent = codeActionsFrame,
+})
+
+AddListLayout(actionsFrame, {
+	Padding = UDim.new(0, 4),
+	FillDirection = Enum.FillDirection.Vertical,
+	HorizontalAlignment = Enum.HorizontalAlignment.Center,
+	VerticalAlignment = Enum.VerticalAlignment.Center,
+})
+
 local openButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.75, 0.1),
-		Position = UDim2.new(0.5, 0, 0.3, -5),
-		AnchorPoint = Vector2.new(0.5, 0),
+		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "OpenButton",
-		Parent = codeActionsFrame :: Instance,
+		Parent = actionsFrame,
 	},
 
 	Text = "Open",
@@ -441,12 +499,10 @@ end)
 
 local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.75, 0.1),
-		Position = UDim2.new(0.5, 0, 0.4, 0),
-		AnchorPoint = Vector2.new(0.5, 0),
+		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "SaveToDiskButton",
-		Parent = codeActionsFrame,
+		Parent = actionsFrame,
 	},
 
 	Text = "Save to Disk",
@@ -461,12 +517,10 @@ end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
-		Size = UDim2.fromScale(0.75, 0.1),
-		Position = UDim2.new(0.5, 0, 0.5, 5),
-		AnchorPoint = Vector2.new(0.5, 0),
+		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "ExecuteButton",
-		Parent = codeActionsFrame :: Instance,
+		Parent = actionsFrame,
 
 		Style = {
 			BackgroundColor3 = {

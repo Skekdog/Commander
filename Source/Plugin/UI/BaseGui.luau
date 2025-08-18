@@ -20,6 +20,7 @@ export type BaseGuiParams = {
 	}?,
 
 	LayoutOrder: number?,
+	ZIndex: number?,
 
 	Visible: boolean?,
 
@@ -57,6 +58,10 @@ local function BaseGui<T>(gui: T & GuiObject, params: BaseGuiParams?): T
 
 	if params.LayoutOrder then
 		gui.LayoutOrder = params.LayoutOrder
+	end
+
+	if params.ZIndex then
+		gui.ZIndex = params.ZIndex
 	end
 
 	gui.Visible = if params.Visible == nil then true else params.Visible
