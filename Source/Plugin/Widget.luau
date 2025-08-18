@@ -128,12 +128,12 @@ local RUN_ICON = Content.fromAssetId(8517323790)
 local EDIT_ICON = Content.fromAssetId(15911231575)
 local DELETE_ICON = Content.fromAssetId(11768918600)
 
-type SavedScriptButton = TextButton & {
+type SavedScriptButton = {
 	["TitleLabel"]: TextLabel,
 	["DeleteButton"]: ImageButton,
 	["RunButton"]: ImageButton,
 	["EditButton"]: ImageButton,
-}
+} & TextButton
 
 local savedScriptButton = (BaseText(Instance.new("TextButton"), {
 	BaseGui = {
