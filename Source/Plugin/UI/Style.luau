@@ -2,7 +2,7 @@
 local styleTargets: {[StyleTarget]: Style} = {}
 
 export type StyleTarget = GuiObject | UIStroke
-export type Style = "Default" | {[string]: {Color: Enum.StudioStyleGuideColor, Modifier: Enum.StudioStyleGuideModifier?}}
+export type Style = "Default" | {[string]: {Color: Enum.StudioStyleGuideColor, Modifier: Enum.StudioStyleGuideModifier?} | (theme: StudioTheme) -> any}
 
 local function sync(gui: StyleTarget, style: Style, theme: StudioTheme): ()
 	if gui:IsA("UIStroke") then
@@ -27,6 +27,10 @@ local function sync(gui: StyleTarget, style: Style, theme: StudioTheme): ()
 
 	if style ~= "Default" then
 		for k, v in style do
+			if typeof(v) == "function" then
+				(gui :: any)[k] = v(theme)
+				continue
+			end
 			(gui :: any)[k] = theme:GetColor(v.Color, v.Modifier)
 		end
 	end

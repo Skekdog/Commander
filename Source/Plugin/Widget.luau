@@ -3,6 +3,7 @@ local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
 local Presets = require("./Core/Presets")
 local ActiveScripts = require("./Core/ActiveScripts")
+local Arguments = require("./Core/Arguments")
 local CodeContainsDestroy = require("./Core/CodeContainsDestroy")
 local SaveToDisk = require("./Core/SaveToDisk")
 local AddAspectRatio = require("./UI/AddEffects/AddAspectRatio")
@@ -17,6 +18,12 @@ local Style = require("./UI/Style")
 local plugin = GetPlugin
 
 local module = {}
+
+local CHECKBOX_ON_DARK = "rbxasset://studio_svg_textures/Shared/Utility/Dark/Standard/CheckboxOn@3x.png"
+local CHECKBOX_OFF_DARK = "rbxasset://studio_svg_textures/Shared/Utility/Dark/Standard/CheckboxOff@3x.png"
+
+local CHECKBOX_ON_LIGHT = "rbxasset://studio_svg_textures/Shared/Utility/Light/Standard/CheckboxOn@3x.png"
+local CHECKBOX_OFF_LIGHT = "rbxasset://studio_svg_textures/Shared/Utility/Light/Standard/CheckboxOff@3x.png"
 
 local widget = plugin:CreateDockWidgetPluginGui("Commander", DockWidgetPluginGuiInfo.new(
 	Enum.InitialDockState.Float,
@@ -118,6 +125,7 @@ savedScriptsScrollHolder.ClipsDescendants = true
 local savedScriptsScroll = ScrollFrame({
 	BaseGui = {
 		Size = UDim2.fromScale(1, 1),
+		ZIndex = 2, -- Otherwise the button strokes overlap the scrollbar
 
 		Transparency = 1,
 
@@ -287,8 +295,8 @@ local editorTitle = BaseText(Instance.new("TextBox"), {
 		PaddingParams = {
 			Left = UDim.new(0, 0),
 			Right = UDim.new(0, 0),
-			Top = UDim.new(0, 5),
-			Bottom = UDim.new(0, 5),
+			Top = UDim.new(0, 2),
+			Bottom = UDim.new(0, 2),
 		},
 
 		Name = "EditorTitle",
@@ -305,12 +313,6 @@ editorTitle.PlaceholderText = "Enter a script name"
 editorTitle.PlaceholderColor3 = Color3.new(0.5, 0.5, 0.5)
 editorTitle.MultiLine = false
 editorTitle.ClearTextOnFocus = false
-
-local function setActiveScript(scriptFile: ModuleScript?): ()
-	ActiveScripts.ActiveScript = scriptFile
-	editorTitle.Text = if scriptFile then scriptFile.Name else "Select a script"
-	editorTitle.TextEditable = scriptFile ~= nil
-end
 
 editorTitle.FocusLost:Connect(function()
 	local scriptFile = ActiveScripts.ActiveScript
@@ -332,6 +334,266 @@ editorTitle.FocusLost:Connect(function()
 
 	ActiveScripts.RenameScript(scriptFile, newName)
 end)
+
+local argumentsHolder = BackgroundFrame({
+	LayoutOrder = 3,
+
+	Size = UDim2.fromScale(1, 1),
+
+	PaddingParams = {
+		Left = UDim.new(0, 8),
+		Right = UDim.new(0, 8),
+		Top = UDim.new(0, 8),
+		Bottom = UDim.new(0, 8),
+	},
+
+	Name = "ArgumentsHolder",
+	Parent = codeActionsFrame,
+})
+
+local argumentsFrame = ScrollFrame({
+	BaseGui = {
+		Size = UDim2.fromScale(1, 1),
+
+		Name = "ArgumentsFrame",
+		Parent = argumentsHolder,
+
+		NoStroke = true,
+		CornerRadius = UDim.new(0, 0),
+		Transparency = 1,
+	}
+})
+
+AddListLayout(argumentsFrame, {
+	FillDirection = Enum.FillDirection.Vertical,
+	HorizontalAlignment = Enum.HorizontalAlignment.Left,
+	VerticalAlignment = Enum.VerticalAlignment.Top,
+	Padding = UDim.new(0, 4),
+})
+
+type ArgumentFrame = {
+	Value: ImageButton | TextBox,
+	Label: TextLabel,
+} & Frame
+
+local textBoxArgument = BackgroundFrame({
+	Transparency = 1,
+	Size = UDim2.fromScale(1, 0.125),
+
+	NoStroke = true,
+
+	Name = "TextBoxArgument",
+}) :: ArgumentFrame
+
+AddListLayout(textBoxArgument, {
+	FillDirection = Enum.FillDirection.Horizontal,
+	HorizontalAlignment = Enum.HorizontalAlignment.Right,
+	VerticalAlignment = Enum.VerticalAlignment.Center,
+	HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween,
+	Padding = UDim.new(0, 4),
+})
+
+do
+	local value = BaseText(Instance.new("TextBox"), {
+		BaseGui = {
+			Size = UDim2.new(0, 40, 1, 0),
+
+			PaddingParams = {
+				Left = UDim.new(0, 2),
+				Right = UDim.new(0, 2),
+				Top = UDim.new(0, 2),
+				Bottom = UDim.new(0, 2),
+			},
+
+			LayoutOrder = 1,
+
+			Name = "Value",
+			Parent = textBoxArgument,
+		},
+		Text = "text",
+		TextXAlignment = Enum.TextXAlignment.Right,
+	})
+
+	local label = BaseText(Instance.new("TextLabel"), {
+		BaseGui = {
+			Size = UDim2.fromScale(0, 1),
+			AutomaticSize = Enum.AutomaticSize.X,
+
+			NoStroke = true,
+
+			Name = "Label",
+			Parent = textBoxArgument,
+		},
+		Text = "Text: ",
+		TextXAlignment = Enum.TextXAlignment.Left,
+	})
+
+	local flex = Instance.new("UIFlexItem")
+	flex.FlexMode = Enum.UIFlexMode.Shrink
+	flex.Parent = label
+
+	flex = Instance.new("UIFlexItem")
+	flex.FlexMode = Enum.UIFlexMode.Grow
+	flex.Parent = value
+end
+
+local booleanArgument = textBoxArgument:Clone()
+
+local function getCheckboxImage(enabled: boolean, isDark: boolean): string
+	if enabled then
+		if isDark then
+			return CHECKBOX_ON_DARK
+		else
+			return CHECKBOX_ON_LIGHT
+		end
+	else
+		if isDark then
+			return CHECKBOX_OFF_DARK
+		else
+			return CHECKBOX_OFF_LIGHT
+		end
+	end
+end
+
+do
+	booleanArgument.Name = "BooleanArgument"
+	booleanArgument.Value:Destroy()
+
+	Style(booleanArgument)
+	Style(booleanArgument.Label)
+
+	local value = BaseGui(Instance.new("ImageButton"), {
+		Name = "Value",
+		Parent = booleanArgument,
+
+		Size = UDim2.new(0, 40, 1, 0),
+
+		Transparency = 1,
+
+		CornerRadius = UDim.new(0, 0),
+		NoStroke = true,
+	})
+
+	value.Image = CHECKBOX_ON_DARK
+
+	AddAspectRatio(value, {
+		Type = Enum.AspectType.ScaleWithParentSize,
+	})
+end
+
+type ScriptArgument = {
+	GetValue: () -> Arguments.ArgumentValue,
+	Argument: Arguments.Argument,
+}
+
+local function addArgument(argument: Arguments.Argument): ScriptArgument
+	local argumentFrame: ArgumentFrame
+	if typeof(argument.Default) == "boolean" then
+		argumentFrame = booleanArgument:Clone()
+	else
+		argumentFrame = textBoxArgument:Clone()
+	end
+
+	local value: ImageButton | TextBox = argumentFrame.Value
+	local label = argumentFrame.Label :: TextLabel
+
+	Style(value, if value:IsA("ImageButton") then {
+		Image = function(theme)
+			local enabled = value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT
+			local isDark = theme.Name == "Dark"
+			return getCheckboxImage(enabled, isDark)
+		end
+	} else nil)
+
+	Style(label)
+
+	label.Text = argument.Name:gsub("_", " ") .. ": "
+
+	if typeof(argument.Default) == "boolean" then
+		assert(value:IsA("ImageButton"))
+
+		do
+			local theme = settings().Studio.Theme
+			local isDark = theme.Name == "Dark"
+			value.Image = getCheckboxImage(argument.Default, isDark)
+		end
+
+		assert(value:IsA("ImageButton"))
+
+		value.Activated:Connect(function()
+			local theme = settings().Studio.Theme
+			local newValue = if value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT then false else true
+			local isDark = theme.Name == "Dark"
+			value.Image = getCheckboxImage(newValue, isDark)
+		end)
+	else
+		assert(value:IsA("TextBox"))
+		value.Text = tostring(argument.Default)
+		value.PlaceholderText = if typeof(argument.Default) == "number" then "Enter a number" else "Enter a string"
+	end
+
+	if typeof(argument.Default) == "number" then
+		local box = value :: TextBox -- type narrowing fails here, don't know why
+
+		local lastSaneValue = box.Text
+
+		box.FocusLost:Connect(function()
+			if not tonumber(box.Text) then
+				box.Text = lastSaneValue
+				Prompt.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
+			end
+		end)
+	end
+
+	argumentFrame.Name = argument.Name .. "_ArgumentFrame"
+	argumentFrame.Parent = argumentsFrame
+
+	return {
+		GetValue = function(): Arguments.ArgumentValue
+			if typeof(argument.Default) == "boolean" then
+				assert(value:IsA("ImageButton"))
+				return value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT
+			else
+				assert(value:IsA("TextBox"))
+				local text = value.Text
+				if typeof(argument.Default) == "number" then
+					return tonumber(text) or error("Invalid number: " .. text)
+				else
+					return text
+				end
+			end
+		end,
+		Argument = argument,
+	}
+end
+
+local function setEditorTitle(scriptFile: ModuleScript?): ()
+	editorTitle.Text = if scriptFile then scriptFile.Name else "Select a script"
+	editorTitle.TextEditable = scriptFile ~= nil
+end
+
+local function setArguments(scriptFile: ModuleScript?): ()
+	for _, v in argumentsFrame:GetChildren() do
+		if v:IsA("Frame") then
+			v:Destroy()
+		end
+	end
+
+	if not scriptFile then
+		return
+	end
+
+	local arguments = Arguments.GetDefinedArguments(ScriptEditorService:GetEditorSource(scriptFile))
+	for _, argument in arguments do
+		addArgument(argument)
+	end
+end
+
+local function setActiveScript(scriptFile: ModuleScript?): ()
+	ActiveScripts.ActiveScript = scriptFile
+	setEditorTitle(scriptFile)
+	setArguments(scriptFile)
+end
 
 local function uiPromptDelete(scriptFile: ModuleScript): ()
 	local name = scriptFile.Name
