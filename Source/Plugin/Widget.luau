@@ -640,7 +640,7 @@ end
 
 local function executeScript(scriptFile: ModuleScript): ()
 	local code = ScriptEditorService:GetEditorSource(scriptFile)
-	Execute(code, scriptFile:GetAttributes())
+	Execute(code, scriptFile:GetAttributes(), scriptFile.Name)
 end
 
 local function uiExecute(scriptFile: ModuleScript): ()

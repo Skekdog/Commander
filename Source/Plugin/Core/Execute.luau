@@ -3,7 +3,7 @@ local RunService = game:GetService("RunService")
 
 local getArgFunction = "local function GETARG(name) local value = script:GetAttribute(name) if value == nil then error('Unknown argument: ' .. name) end return value end\n"
 
-local function Execute(code: string, attributes: {[string]: any}?): ()
+local function Execute(code: string, attributes: {[string]: any}?, name: string): ()
 	local recording: string?
 
 	if not RunService:IsRunning() then
@@ -15,6 +15,7 @@ local function Execute(code: string, attributes: {[string]: any}?): ()
 
 	local success, result = pcall(function(): any
 		local newScript = Instance.new("ModuleScript")
+		newScript.Name = name
 
 		for name, value in attributes or {} do
 			newScript:SetAttribute(name, value)
