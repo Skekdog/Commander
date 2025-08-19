@@ -75,12 +75,12 @@ plugin.Unloading:Connect(function()
 
 		local openScript = ScriptEditorService:FindScriptDocument(v)
 		if openScript then
-			task.spawn(openScript.CloseAsync, openScript)
+			openScript:CloseAsync()
 		end
-		v:Destroy()
 	end
 
 	PluginStorage.WriteScripts(scriptData)
+	scriptFolder:Destroy()
 end)
 
 for name, scriptData in PluginStorage.GetScripts() do
