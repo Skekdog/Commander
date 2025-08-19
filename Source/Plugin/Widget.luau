@@ -332,6 +332,8 @@ editorTitle.FocusLost:Connect(function()
 		button.Name = newName .. "_SavedScriptButton"
 		button.TitleLabel.Text = newName
 	end
+
+	activeScript.Name = newName
 end)
 
 local argumentsHolder = BackgroundFrame({
