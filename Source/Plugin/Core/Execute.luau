@@ -1,7 +1,7 @@
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local RunService = game:GetService("RunService")
 
-local getArgFunction = "local function GETARG(name) return script:GetAttribute(name) end\n"
+local getArgFunction = "local function GETARG(name) local value = script:GetAttribute(name) if value == nil then error('Unknown argument: ' .. name) end return value end\n"
 
 local function Execute(code: string, attributes: {[string]: any}?): ()
 	local recording: string?
