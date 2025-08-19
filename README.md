@@ -1,6 +1,6 @@
 # Commander
 
-![Commander](./Assets/CommanderWide.png)
+![Commander](./Assets/Commander.png)
 
 A Roblox Studio plugin, providing a simple multi-line command bar, with support for undo, saving presets and syntax highlighting.
 
