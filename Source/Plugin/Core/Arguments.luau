@@ -9,6 +9,7 @@ export type Argument = {
 }
 
 local function parseLine(line: string): Argument?
+	local originalLine = line
 	line = line:gsub("^%s+", "")
 	if line:sub(1, 13) ~= "-- COMMANDER " then
 		return nil
@@ -19,11 +20,15 @@ local function parseLine(line: string): Argument?
 	local name, default = line:match("(%S+)%s+(%S+)")
 
 	if not name then
-		error("Argument definition missing name: '" .. line .. "'")
+		warn("Argument definition missing name: '" .. originalLine .. "'")
+		warn("Expected format: '-- COMMANDER NAME DEFAULT'")
+		return nil
 	end
 
 	if not default then
-		error("Argument definition missing default: '" .. line .. "'")
+		warn("Argument definition missing default: '" .. originalLine .. "'")
+		warn("Expected format: '-- COMMANDER NAME DEFAULT'")
+		return nil
 	end
 
 	if default == "true" or default == "false" then
