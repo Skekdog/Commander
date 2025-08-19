@@ -9,7 +9,7 @@ local ScriptFile = {}
 
 local plugin = GetPlugin
 
-local scriptFolder = CoreGui:FindFirstChild("CommanderScripts") or Instance.new("Folder")
+local scriptFolder = Instance.new("Folder")
 scriptFolder.Name = "CommanderScripts"
 scriptFolder.Parent = CoreGui
 
