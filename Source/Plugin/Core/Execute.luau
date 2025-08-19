@@ -1,7 +1,9 @@
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local RunService = game:GetService("RunService")
 
-local function Execute(code: string): ()
+local getArgFunction = "local function GETARG(name) return script:GetAttribute(name) end\n"
+
+local function Execute(code: string, attributes: {[string]: any}?): ()
 	local recording: string?
 
 	if not RunService:IsRunning() then
@@ -14,7 +16,13 @@ local function Execute(code: string): ()
 	local success, result = pcall(function(): any
 		local newScript = Instance.new("ModuleScript")
 
-		local withReturn = code .. "\nreturn nil" -- Newline so that any comments on the last line don't mess things up
+		for name, value in attributes or {} do
+			newScript:SetAttribute(name, value)
+		end
+
+		local withGetArgFunction = getArgFunction .. code
+
+		local withReturn = withGetArgFunction .. "\nreturn nil" -- Newline so that any comments on the last line don't mess things up
 		newScript.Source = withReturn;
 		(require)(newScript)
 

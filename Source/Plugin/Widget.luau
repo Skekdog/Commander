@@ -486,7 +486,11 @@ type ScriptArgument = {
 	Argument: Arguments.Argument,
 }
 
-local function addArgument(argument: Arguments.Argument): ScriptArgument
+local function setScriptArgument(scriptFile: ModuleScript, name: string, value: string | number | boolean): ()
+	scriptFile:SetAttribute(name, value)
+end
+
+local function addArgument(argument: Arguments.Argument, scriptFile: ModuleScript): ()
 	local argumentFrame: ArgumentFrame
 	if typeof(argument.Default) == "boolean" then
 		argumentFrame = booleanArgument:Clone()
@@ -511,6 +515,7 @@ local function addArgument(argument: Arguments.Argument): ScriptArgument
 
 	if typeof(argument.Default) == "boolean" then
 		assert(value:IsA("ImageButton"))
+		setScriptArgument(scriptFile, argument.Name, value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT)
 
 		do
 			local theme = settings().Studio.Theme
@@ -525,6 +530,7 @@ local function addArgument(argument: Arguments.Argument): ScriptArgument
 			local newValue = if value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT then false else true
 			local isDark = theme.Name == "Dark"
 			value.Image = getCheckboxImage(newValue, isDark)
+			setScriptArgument(scriptFile, argument.Name, newValue)
 		end)
 	else
 		assert(value:IsA("TextBox"))
@@ -534,6 +540,7 @@ local function addArgument(argument: Arguments.Argument): ScriptArgument
 
 	if typeof(argument.Default) == "number" then
 		local box = value :: TextBox -- type narrowing fails here, don't know why
+		setScriptArgument(scriptFile, argument.Name, tonumber(box.Text) or error("Invalid number"))
 
 		local lastSaneValue = box.Text
 
@@ -541,30 +548,22 @@ local function addArgument(argument: Arguments.Argument): ScriptArgument
 			if not tonumber(box.Text) then
 				box.Text = lastSaneValue
 				Prompt.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
+			else
+				lastSaneValue = box.Text
+				setScriptArgument(scriptFile, argument.Name, box.Text)
 			end
+		end)
+	elseif typeof(argument.Default) == "string" then
+		local box = value :: TextBox
+		setScriptArgument(scriptFile, argument.Name, box.Text)
+
+		box.FocusLost:Connect(function()
+			setScriptArgument(scriptFile, argument.Name, box.Text)
 		end)
 	end
 
 	argumentFrame.Name = argument.Name .. "_ArgumentFrame"
 	argumentFrame.Parent = argumentsFrame
-
-	return {
-		GetValue = function(): Arguments.ArgumentValue
-			if typeof(argument.Default) == "boolean" then
-				assert(value:IsA("ImageButton"))
-				return value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT
-			else
-				assert(value:IsA("TextBox"))
-				local text = value.Text
-				if typeof(argument.Default) == "number" then
-					return tonumber(text) or error("Invalid number: " .. text)
-				else
-					return text
-				end
-			end
-		end,
-		Argument = argument,
-	}
 end
 
 local function setEditorTitle(scriptFile: ModuleScript?): ()
@@ -585,7 +584,7 @@ local function setArguments(scriptFile: ModuleScript?): ()
 
 	local arguments = Arguments.GetDefinedArguments(ScriptEditorService:GetEditorSource(scriptFile))
 	for _, argument in arguments do
-		addArgument(argument)
+		addArgument(argument, scriptFile)
 	end
 end
 
@@ -629,17 +628,22 @@ local function uiEdit(scriptFile: ModuleScript): ()
 	plugin:OpenScript(scriptFile)
 end
 
+local function executeScript(scriptFile: ModuleScript): ()
+	local code = ScriptEditorService:GetEditorSource(scriptFile)
+	Execute(code, scriptFile:GetAttributes())
+end
+
 local function uiExecute(scriptFile: ModuleScript): ()
 	local code = ScriptEditorService:GetEditorSource(scriptFile)
 	if CodeContainsDestroy(code) then
 		Prompt.ShowConfirmationPrompt(widget, "Warning", "Script contains possible usage of Instance:Destroy(), this cannot be undone! Consider using Instance.Parent = nil instead.", function(response)
 			if response == "OK" then
-				Execute(code)
+				executeScript(scriptFile)
 			end
 		end, "Execute Anyway")
 		return
 	end
-	Execute(code)
+	executeScript(scriptFile)
 end
 
 local function uiSaveToDisk(scriptFile: ModuleScript): ()
