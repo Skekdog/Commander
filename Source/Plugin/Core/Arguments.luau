@@ -31,6 +31,17 @@ local function parseLine(line: string): Argument?
 		return nil
 	end
 
+	local success, err: string? = pcall(function()
+		Instance.new("ModuleScript"):SetAttribute(name, false)
+		return nil
+	end)
+
+	if not success then
+		warn("Invalid argument name: '" .. originalLine .. "'")
+		warn(err)
+		return nil
+	end
+
 	if default == "true" or default == "false" then
 		default = default == "true"
 	elseif tonumber(default) then

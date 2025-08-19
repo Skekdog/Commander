@@ -1,10 +1,10 @@
 local ScriptEditorService = game:GetService("ScriptEditorService")
 local GetPlugin = require("../Lib/GetPlugin")
 local Execute = require("./Core/Execute")
-local Presets = require("./Core/Presets")
-local ActiveScripts = require("./Core/ActiveScripts")
+local ScriptFile = require("./Core/ScriptFile")
 local Arguments = require("./Core/Arguments")
 local CodeContainsDestroy = require("./Core/CodeContainsDestroy")
+local DefaultScript = require("./Core/DefaultScript")
 local SaveToDisk = require("./Core/SaveToDisk")
 local AddAspectRatio = require("./UI/AddEffects/AddAspectRatio")
 local AddListLayout = require("./UI/AddEffects/AddListLayout")
@@ -18,6 +18,8 @@ local Style = require("./UI/Style")
 local plugin = GetPlugin
 
 local module = {}
+
+local activeScript: ModuleScript?
 
 local CHECKBOX_ON_DARK = "rbxasset://studio_svg_textures/Shared/Utility/Dark/Standard/CheckboxOn@3x.png"
 local CHECKBOX_OFF_DARK = "rbxasset://studio_svg_textures/Shared/Utility/Dark/Standard/CheckboxOff@3x.png"
@@ -315,24 +317,21 @@ editorTitle.MultiLine = false
 editorTitle.ClearTextOnFocus = false
 
 editorTitle.FocusLost:Connect(function()
-	local scriptFile = ActiveScripts.ActiveScript
-	if not scriptFile then
+	if not activeScript then
 		return
 	end
 
 	local newName = editorTitle.Text
-	if newName == "" or newName == "Select a script" or newName == scriptFile.Name or ActiveScripts.GetScripts()[newName] then
-		editorTitle.Text = scriptFile.Name
+	if newName == "" or newName == "Select a script" or newName == activeScript.Name or ScriptFile.GetScript(newName) then
+		editorTitle.Text = activeScript.Name
 		return
 	end
 
-	local button = savedScriptsScroll:FindFirstChild(scriptFile.Name .. "_SavedScriptButton") :: SavedScriptButton?
+	local button = savedScriptsScroll:FindFirstChild(activeScript.Name .. "_SavedScriptButton") :: SavedScriptButton?
 	if button ~= nil then
 		button.Name = newName .. "_SavedScriptButton"
 		button.TitleLabel.Text = newName
 	end
-
-	ActiveScripts.RenameScript(scriptFile, newName)
 end)
 
 local argumentsHolder = BackgroundFrame({
@@ -498,12 +497,35 @@ local function addArgument(argument: Arguments.Argument, scriptFile: ModuleScrip
 		argumentFrame = textBoxArgument:Clone()
 	end
 
-	local value: ImageButton | TextBox = argumentFrame.Value
+	local value = scriptFile:GetAttribute(argument.Name)
+	assert(typeof(value) == "string" or typeof(value) == "number" or typeof(value) == "boolean" or value == nil, "Invalid argument type")
+
+	if value == nil then
+		value = argument.Default
+	end
+
+	local valueObject: ImageButton | TextBox = argumentFrame.Value
 	local label = argumentFrame.Label :: TextLabel
 
-	Style(value, if value:IsA("ImageButton") then {
+	label.Text = argument.Name:gsub("_", " ") .. ": "
+
+	local function setBooleanValue(): ()
+		assert(valueObject:IsA("ImageButton") and typeof(value) == "boolean")
+		local theme = settings().Studio.Theme
+		local isDark = theme.Name == "Dark"
+		valueObject.Image = getCheckboxImage(value, isDark)
+		setScriptArgument(scriptFile, argument.Name, value)
+	end
+
+	local function setTextValue(): ()
+		assert(valueObject:IsA("TextBox") and (typeof(value) == "string" or typeof(value) == "number"))
+		valueObject.Text = tostring(value)
+		setScriptArgument(scriptFile, argument.Name, value)
+	end
+
+	Style(valueObject, if valueObject:IsA("ImageButton") then {
 		Image = function(theme)
-			local enabled = value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT
+			local enabled = valueObject.Image == CHECKBOX_ON_DARK or valueObject.Image == CHECKBOX_ON_LIGHT
 			local isDark = theme.Name == "Dark"
 			return getCheckboxImage(enabled, isDark)
 		end
@@ -511,55 +533,42 @@ local function addArgument(argument: Arguments.Argument, scriptFile: ModuleScrip
 
 	Style(label)
 
-	label.Text = argument.Name:gsub("_", " ") .. ": "
-
 	if typeof(argument.Default) == "boolean" then
-		assert(value:IsA("ImageButton"))
-		setScriptArgument(scriptFile, argument.Name, value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT)
+		assert(valueObject:IsA("ImageButton") and typeof(value) == "boolean")
+		setBooleanValue()
 
-		do
-			local theme = settings().Studio.Theme
-			local isDark = theme.Name == "Dark"
-			value.Image = getCheckboxImage(argument.Default, isDark)
-		end
-
-		assert(value:IsA("ImageButton"))
-
-		value.Activated:Connect(function()
-			local theme = settings().Studio.Theme
-			local newValue = if value.Image == CHECKBOX_ON_DARK or value.Image == CHECKBOX_ON_LIGHT then false else true
-			local isDark = theme.Name == "Dark"
-			value.Image = getCheckboxImage(newValue, isDark)
-			setScriptArgument(scriptFile, argument.Name, newValue)
+		valueObject.Activated:Connect(function()
+			value = not value
+			setBooleanValue()
 		end)
 	else
-		assert(value:IsA("TextBox"))
-		value.Text = tostring(argument.Default)
-		value.PlaceholderText = if typeof(argument.Default) == "number" then "Enter a number" else "Enter a string"
-	end
+		assert(valueObject:IsA("TextBox"))
+		valueObject.PlaceholderText = if typeof(argument.Default) == "number" then "Enter a number" else "Enter a string"
+		setTextValue()
 
-	if typeof(argument.Default) == "number" then
-		local box = value :: TextBox -- type narrowing fails here, don't know why
-		setScriptArgument(scriptFile, argument.Name, tonumber(box.Text) or error("Invalid number"))
+		if typeof(argument.Default) == "number" then
+			local box = valueObject :: TextBox -- type narrowing fails here, don't know why
+			setScriptArgument(scriptFile, argument.Name, tonumber(box.Text) or error("Invalid number"))
 
-		local lastSaneValue = box.Text
+			local lastSaneValue = box.Text
 
-		box.FocusLost:Connect(function()
-			if not tonumber(box.Text) then
-				box.Text = lastSaneValue
-				Prompt.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
-			else
-				lastSaneValue = box.Text
-				setScriptArgument(scriptFile, argument.Name, box.Text)
-			end
-		end)
-	elseif typeof(argument.Default) == "string" then
-		local box = value :: TextBox
-		setScriptArgument(scriptFile, argument.Name, box.Text)
-
-		box.FocusLost:Connect(function()
+			box.FocusLost:Connect(function()
+				if not tonumber(box.Text) then
+					box.Text = lastSaneValue
+					Prompt.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
+				else
+					lastSaneValue = box.Text
+					setScriptArgument(scriptFile, argument.Name, box.Text)
+				end
+			end)
+		elseif typeof(argument.Default) == "string" then
+			local box = valueObject :: TextBox
 			setScriptArgument(scriptFile, argument.Name, box.Text)
-		end)
+
+			box.FocusLost:Connect(function()
+				setScriptArgument(scriptFile, argument.Name, box.Text)
+			end)
+		end
 	end
 
 	argumentFrame.Name = argument.Name .. "_ArgumentFrame"
@@ -589,7 +598,7 @@ local function setArguments(scriptFile: ModuleScript?): ()
 end
 
 local function setActiveScript(scriptFile: ModuleScript?): ()
-	ActiveScripts.ActiveScript = scriptFile
+	activeScript = scriptFile
 	setEditorTitle(scriptFile)
 	setArguments(scriptFile)
 end
@@ -615,11 +624,10 @@ local function uiPromptDelete(scriptFile: ModuleScript): ()
 		return
 	end
 
-	ActiveScripts.RemoveScript(name)
-	Presets.DeletePreset(name)
+	scriptFile:Destroy()
 	button:Destroy()
 
-	if ActiveScripts.ActiveScript == scriptFile then
+	if activeScript == scriptFile then
 		setActiveScript(nil)
 	end
 end
@@ -659,7 +667,7 @@ local function addSavedScript(scriptFile: ModuleScript): ()
 	button.Name = name .. "_SavedScriptButton"
 
 	button.Activated:Connect(function()
-		if ActiveScripts.ActiveScript == scriptFile then
+		if activeScript == scriptFile then
 			uiEdit(scriptFile)
 		end
 		setActiveScript(scriptFile)
@@ -700,7 +708,7 @@ end
 local UNTITLED_SCRIPT = "Untitled Script"
 addScriptButton.Activated:Connect(function()
 	local highestNumber: number?
-	for _, v in ActiveScripts.GetScripts() do
+	for _, v in ScriptFile.GetScripts() do
 		if v.Name:sub(1, #UNTITLED_SCRIPT) == UNTITLED_SCRIPT then
 			local number = tonumber(v.Name:sub(#UNTITLED_SCRIPT + 1)) or 0
 			if not highestNumber or number > highestNumber then
@@ -709,13 +717,13 @@ addScriptButton.Activated:Connect(function()
 		end
 	end
 
-	local newScript = ActiveScripts.AddScript("Untitled Script" .. (if highestNumber then highestNumber + 1 else ""), "print(\"Hello, world!\")")
+	local newScript = ScriptFile.AddScript("Untitled Script" .. (if highestNumber then highestNumber + 1 else ""), DefaultScript)
 	addSavedScript(newScript)
 	setActiveScript(newScript)
 end)
 
 local isFirst = true
-for _, scriptFile in ActiveScripts.GetScripts() do
+for _, scriptFile in ScriptFile.GetScripts() do
 	addSavedScript(scriptFile)
 	if isFirst then
 		setActiveScript(scriptFile)
@@ -757,10 +765,10 @@ local openButton = BaseText(Instance.new("TextButton"), {
 })
 
 openButton.Activated:Connect(function()
-	if not ActiveScripts.ActiveScript then
+	if not activeScript then
 		return
 	end
-	uiEdit(ActiveScripts.ActiveScript)
+	uiEdit(activeScript)
 end)
 
 local saveToDiskButton = BaseText(Instance.new("TextButton"), {
@@ -775,10 +783,10 @@ local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 })
 
 saveToDiskButton.Activated:Connect(function()
-	if not ActiveScripts.ActiveScript then
+	if not activeScript then
 		return
 	end
-	uiSaveToDisk(ActiveScripts.ActiveScript)
+	uiSaveToDisk(activeScript)
 end)
 
 local executeButton = BaseText(Instance.new("TextButton"), {
@@ -802,10 +810,10 @@ local executeButton = BaseText(Instance.new("TextButton"), {
 })
 
 executeButton.Activated:Connect(function()
-	if not ActiveScripts.ActiveScript then
+	if not activeScript then
 		return
 	end
-	uiExecute(ActiveScripts.ActiveScript)
+	uiExecute(activeScript)
 end)
 
 frame.Parent = widget
