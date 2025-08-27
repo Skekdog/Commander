@@ -7,6 +7,7 @@ export type AspectRatioParams = {
 
 local function AddAspectRatio<T>(instance: T & Instance, params: AspectRatioParams?): T
 	params = params or {} :: AspectRatioParams
+	assert(params)
 
 	local aspectRatio = Instance.new("UIAspectRatioConstraint")
 	aspectRatio.AspectRatio = params.Ratio or 1

@@ -132,7 +132,7 @@ local savedScriptsScroll = ScrollFrame({
 		Transparency = 1,
 
 		Name = "SavedScriptsFrame",
-		Parent = savedScriptsScrollHolder,
+		Parent = savedScriptsScrollHolder :: Instance,
 	},
 
 	HorizontalScrollBarInset = Enum.ScrollBarInset.None,
@@ -302,7 +302,7 @@ local editorTitle = BaseText(Instance.new("TextBox"), {
 		},
 
 		Name = "EditorTitle",
-		Parent = codeActionsFrame,
+		Parent = codeActionsFrame :: Instance,
 
 		LayoutOrder = 1,
 	},
@@ -357,7 +357,7 @@ local argumentsFrame = ScrollFrame({
 		Size = UDim2.fromScale(1, 1),
 
 		Name = "ArgumentsFrame",
-		Parent = argumentsHolder,
+		Parent = argumentsHolder :: Instance,
 
 		NoStroke = true,
 		CornerRadius = UDim.new(0, 0),
@@ -760,7 +760,7 @@ local openButton = BaseText(Instance.new("TextButton"), {
 		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "OpenButton",
-		Parent = actionsFrame,
+		Parent = actionsFrame :: Instance,
 	},
 
 	Text = "Open",
@@ -778,7 +778,7 @@ local saveToDiskButton = BaseText(Instance.new("TextButton"), {
 		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "SaveToDiskButton",
-		Parent = actionsFrame,
+		Parent = actionsFrame :: Instance,
 	},
 
 	Text = "Save to Disk",
@@ -796,7 +796,7 @@ local executeButton = BaseText(Instance.new("TextButton"), {
 		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "ExecuteButton",
-		Parent = actionsFrame,
+		Parent = actionsFrame :: Instance,
 
 		Style = {
 			BackgroundColor3 = {

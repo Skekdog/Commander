@@ -17,7 +17,7 @@ local function Execute(code: string, attributes: {[string]: any}?, name: string)
 		local newScript = Instance.new("ModuleScript")
 		newScript.Name = name
 
-		for name, value in attributes or {} do
+		for name, value in attributes or {} :: {[string] : any} do
 			newScript:SetAttribute(name, value)
 		end
 

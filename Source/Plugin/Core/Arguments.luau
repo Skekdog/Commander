@@ -42,15 +42,16 @@ local function parseLine(line: string): Argument?
 		return nil
 	end
 
+	local newDefault: ArgumentValue = default
 	if default == "true" or default == "false" then
-		default = default == "true"
+		newDefault = default == "true"
 	elseif tonumber(default) then
-		default = tonumber(default) :: number
+		newDefault = tonumber(default) :: number
 	end
 
 	return {
 		Name = name,
-		Default = default,
+		Default = newDefault,
 	}
 end
 
@@ -59,7 +60,7 @@ function module.GetDefinedArguments(source: string): {Argument}
 
 	local lines = source:split("\n")
 	for _, line in lines do
-		table.insert(arguments, parseLine(line))
+		table.insert(arguments, parseLine(line) :: Argument)
 	end
 
 	return arguments
