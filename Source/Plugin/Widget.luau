@@ -722,6 +722,8 @@ addScriptButton.Activated:Connect(function()
 	local newScript = ScriptFile.AddScript("Untitled Script" .. (if highestNumber then highestNumber + 1 else ""), DefaultScript)
 	addSavedScript(newScript)
 	setActiveScript(newScript)
+
+	ScriptEditorService:OpenScriptDocumentAsync(newScript)
 end)
 
 local isFirst = true
