@@ -1,6 +1,6 @@
 local Toolbar = require("./Plugin/Toolbar")
-local Widget = require("./Plugin/Widget")
 
 Toolbar.OnClick = function()
+	local Widget = require("./Plugin/Widget")
 	Widget.ToggleWidget()
 end
