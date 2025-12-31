@@ -5,7 +5,7 @@ local function SaveToDisk(scriptFile: ModuleScript): ()
 	local lastSelection = Selection:Get()
 
 	Selection:Set({scriptFile})
-	GetPlugin:PromptSaveSelection(scriptFile.Name)
+	GetPlugin:PromptSaveSelectionAsync(scriptFile.Name)
 
 	Selection:Set(lastSelection)
 end
