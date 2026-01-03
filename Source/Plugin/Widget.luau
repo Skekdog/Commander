@@ -347,17 +347,36 @@ local argumentsHolder = BackgroundFrame({
 	Parent = codeActionsFrame,
 })
 
+argumentsHolder.ClipsDescendants = true
+
 local argumentsFrame = ScrollFrame({
 	BaseGui = {
 		Size = UDim2.fromScale(1, 1),
 
 		Name = "ArgumentsFrame",
+
 		Parent = argumentsHolder :: Instance,
 
 		NoStroke = true,
 		CornerRadius = UDim.new(0, 0),
 		Transparency = 1,
+
+		PaddingParams = {
+			Right = UDim.new(0, 4),
+			Left = UDim.new(),
+			Top = UDim.new(),
+			Bottom = UDim.new(),
+		}
 	}
+})
+
+argumentsFrame.ClipsDescendants = false
+
+AddListLayout(argumentsFrame, {
+	FillDirection = Enum.FillDirection.Vertical,
+	HorizontalAlignment = Enum.HorizontalAlignment.Left,
+	VerticalAlignment = Enum.VerticalAlignment.Top,
+	Padding = UDim.new(0, 4),
 })
 
 local actionsFrame = BackgroundFrame({
