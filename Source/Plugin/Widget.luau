@@ -5,7 +5,6 @@ local ScriptFile = require("./Core/ScriptFile")
 local Arguments = require("./Core/Arguments")
 local CodeContainsDestroy = require("./Core/CodeContainsDestroy")
 local DefaultScript = require("./Core/DefaultScript")
-local SaveToDisk = require("./Core/SaveToDisk")
 local AddAspectRatio = require("./UI/AddEffects/AddAspectRatio")
 local AddListLayout = require("./UI/AddEffects/AddListLayout")
 local BackgroundFrame = require("./UI/BackgroundFrame")
@@ -656,10 +655,6 @@ local function uiExecute(scriptFile: ModuleScript): ()
 	executeScript(scriptFile)
 end
 
-local function uiSaveToDisk(scriptFile: ModuleScript): ()
-	SaveToDisk(scriptFile)
-end
-
 local function addSavedScript(scriptFile: ModuleScript): ()
 	local name = scriptFile.Name
 
@@ -775,30 +770,14 @@ openButton.Activated:Connect(function()
 	uiEdit(activeScript)
 end)
 
-local saveToDiskButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(1, 0.3),
-
-		Name = "SaveToDiskButton",
-		Parent = actionsFrame :: Instance,
-	},
-
-	Text = "Save to Disk",
-})
-
-saveToDiskButton.Activated:Connect(function()
-	if not activeScript then
-		return
-	end
-	uiSaveToDisk(activeScript)
-end)
-
 local executeButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(1, 0.3),
 
 		Name = "ExecuteButton",
 		Parent = actionsFrame :: Instance,
+
+		LayoutOrder = 2,
 
 		Style = {
 			BackgroundColor3 = {
@@ -819,6 +798,19 @@ executeButton.Activated:Connect(function()
 	end
 	uiExecute(activeScript)
 end)
+
+local addToToolbarButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(1, 0.3),
+
+		Name = "AddToToolbarButton",
+		Parent = actionsFrame :: Instance,
+
+		LayoutOrder = 1,
+	},
+
+	Text = "Add to Toolbar"
+})
 
 frame.Parent = widget
 
