@@ -12,11 +12,18 @@ export type Parameters = {
 local toolbar = Toolbar.Toolbar
 
 local buttons: {[string]: PluginToolbarButton?} = {}
+local buttonsThatHaveBeenRemovedButStillNeedToBeTrackedBecauseOfARobloxBug: {[string]: PluginToolbarButton?} = {}
 
+-- todo: this function also acts as an update function, but only for the icon, until roblox fixes button removal
 function ToolbarButton.Add(scriptFile: ModuleScript, parameters: Parameters): ()
-	assert(not buttons[scriptFile.Name], "Toolbar button already exists: " .. scriptFile.Name)
+	local button = buttonsThatHaveBeenRemovedButStillNeedToBeTrackedBecauseOfARobloxBug[scriptFile.Name]
+		or
+		toolbar:CreateButton("CommanderScript" .. scriptFile.Name, parameters.Tooltip or "", parameters.Icon or "", scriptFile.Name)
 
-	local button = toolbar:CreateButton("CommanderScript" .. scriptFile.Name, parameters.Tooltip or "", parameters.Icon or "", scriptFile.Name)
+	if parameters.Icon or parameters.Icon == "" then
+		button.Icon = parameters.Icon
+	end
+
 	button.ClickableWhenViewportHidden = true
 
 	button.Click:Connect(function()
@@ -24,14 +31,15 @@ function ToolbarButton.Add(scriptFile: ModuleScript, parameters: Parameters): ()
 	end)
 
 	buttons[scriptFile.Name] = button
+	buttonsThatHaveBeenRemovedButStillNeedToBeTrackedBecauseOfARobloxBug[scriptFile.Name] = button
 end
 
 function ToolbarButton.Remove(scriptName: string): ()
 	local button = buttons[scriptName]
 	assert(button, "Attempt to remove non-existant toolbar button: " .. scriptName)
 
-	-- Roblox bug, but destroying the button doesn't remove it :frowning:
-	button:Destroy()
+	-- todo Roblox bug, but destroying the button doesn't remove it :frowning:
+	-- button:Destroy()
 
 	buttons[scriptName] = nil
 end
