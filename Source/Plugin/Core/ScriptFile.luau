@@ -32,7 +32,7 @@ end
 function ScriptFile.Delete(scriptFile: ModuleScript): ()
 	scriptFile:Destroy()
 
-	local button = ToolbarButton.GetButton(scriptFile.Name)
+	local button = ToolbarButton.Get(scriptFile.Name)
 	if button then
 		ToolbarButton.Remove(scriptFile.Name)
 	end
@@ -82,9 +82,12 @@ plugin.Unloading:Connect(function()
 			end
 		end
 
+		local toolbarButton = ToolbarButton.Get(v.Name)
+
 		scriptData[v.Name] = {
 			Source = ScriptEditorService:GetEditorSource(v),
 			Arguments = arguments,
+			ToolbarButton = if toolbarButton then toolbarButton.Parameters else nil,
 		}
 
 		local openScript = ScriptEditorService:FindScriptDocument(v)

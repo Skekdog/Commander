@@ -401,7 +401,7 @@ local function updateTheToolbarButton(): ()
 		return
 	end
 
-	theToolbarButton.Text = if ToolbarButton.GetButton(activeScript.Name) then "Remove from Toolbar" else "Add to Toolbar"
+	theToolbarButton.Text = if ToolbarButton.Get(activeScript.Name) then "Remove from Toolbar" else "Add to Toolbar"
 end
 
 theToolbarButton.Activated:Connect(function()
@@ -409,7 +409,7 @@ theToolbarButton.Activated:Connect(function()
 		return
 	end
 
-	if ToolbarButton.GetButton(activeScript.Name) then
+	if ToolbarButton.Get(activeScript.Name) then
 		Prompt.ShowConfirmationPrompt(widget, "Remove from Toolbar", "NOTE: Due to a Roblox bug, you must reload the plugin for this to take effect.", function(response)
 			if response == "OK" then
 				ToolbarButton.Remove(activeScript.Name)

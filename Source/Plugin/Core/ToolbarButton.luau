@@ -9,29 +9,40 @@ export type Parameters = {
 	Tooltip: string?,
 }
 
+export type Button = {
+	PluginButton: PluginToolbarButton,
+	Parameters: Parameters,
+	ClickConnection: RBXScriptConnection?,
+}
+
 local toolbar = Toolbar.Toolbar
 
-local buttons: {[string]: PluginToolbarButton?} = {}
-local buttonsThatHaveBeenRemovedButStillNeedToBeTrackedBecauseOfARobloxBug: {[string]: PluginToolbarButton?} = {}
+local buttons: {[string]: Button?} = {}
+local buttonsForRobloxBug: {[string]: Button?} = {}
 
 -- todo: this function also acts as an update function, but only for the icon, until roblox fixes button removal
 function ToolbarButton.Add(scriptFile: ModuleScript, parameters: Parameters): ()
-	local button = buttonsThatHaveBeenRemovedButStillNeedToBeTrackedBecauseOfARobloxBug[scriptFile.Name]
-		or
-		toolbar:CreateButton("CommanderScript" .. scriptFile.Name, parameters.Tooltip or "", parameters.Icon or "", scriptFile.Name)
+	local button = buttonsForRobloxBug[scriptFile.Name] or {
+		PluginButton = toolbar:CreateButton("CommanderScript" .. scriptFile.Name, parameters.Tooltip or "", parameters.Icon or "", scriptFile.Name),
+		Parameters = parameters,
+	} :: Button
 
 	if parameters.Icon or parameters.Icon == "" then
-		button.Icon = parameters.Icon
+		button.PluginButton.Icon = parameters.Icon
 	end
 
-	button.ClickableWhenViewportHidden = true
+	button.PluginButton.ClickableWhenViewportHidden = true
 
-	button.Click:Connect(function()
+	if button.ClickConnection then
+		button.ClickConnection:Disconnect()
+	end
+
+	button.ClickConnection = button.PluginButton.Click:Connect(function()
 		Execute(ScriptEditorService:GetEditorSource(scriptFile), scriptFile:GetAttributes(), scriptFile.Name)
 	end)
 
 	buttons[scriptFile.Name] = button
-	buttonsThatHaveBeenRemovedButStillNeedToBeTrackedBecauseOfARobloxBug[scriptFile.Name] = button
+	buttonsForRobloxBug[scriptFile.Name] = button
 end
 
 function ToolbarButton.Remove(scriptName: string): ()
@@ -44,7 +55,7 @@ function ToolbarButton.Remove(scriptName: string): ()
 	buttons[scriptName] = nil
 end
 
-function ToolbarButton.GetButton(scriptName: string): PluginToolbarButton?
+function ToolbarButton.Get(scriptName: string): Button?
 	return buttons[scriptName]
 end
 
@@ -52,7 +63,7 @@ function ToolbarButton.UpdateIcon(scriptName: string, icon: string): ()
 	local button = buttons[scriptName]
 	assert(button, "Attempt to edit non-existant toolbar button: " .. scriptName)
 
-	button.Icon = icon
+	button.PluginButton.Icon = icon
 end
 
 return ToolbarButton
