@@ -27,6 +27,8 @@ function ToolbarButton.Add(scriptFile: ModuleScript, parameters: Parameters): ()
 		Parameters = parameters,
 	} :: Button
 
+	button.Parameters = parameters
+
 	if parameters.Icon or parameters.Icon == "" then
 		button.PluginButton.Icon = parameters.Icon
 	end
