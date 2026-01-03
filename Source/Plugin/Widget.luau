@@ -360,6 +360,77 @@ local argumentsFrame = ScrollFrame({
 	}
 })
 
+local actionsFrame = BackgroundFrame({
+	Transparency = 1,
+	Size = UDim2.fromScale(1, 0.4),
+	Position = UDim2.new(0, 0, 0.1, 16),
+
+	SizeConstraints = {
+		Max = Vector2.new(math.huge, 120),
+	},
+
+	LayoutOrder = 2,
+
+	Name = "Actions",
+	Parent = codeActionsFrame,
+})
+
+AddListLayout(actionsFrame, {
+	Padding = UDim.new(0, 4),
+	FillDirection = Enum.FillDirection.Vertical,
+	HorizontalAlignment = Enum.HorizontalAlignment.Center,
+	VerticalAlignment = Enum.VerticalAlignment.Center,
+})
+
+local theToolbarButton = BaseText(Instance.new("TextButton"), {
+	BaseGui = {
+		Size = UDim2.fromScale(1, 0.3),
+
+		Name = "TheToolbarButton",
+		Parent = actionsFrame :: Instance,
+
+		LayoutOrder = 1,
+	},
+
+	Text = "Add to Toolbar"
+})
+
+local function updateTheToolbarButton(): ()
+	if not activeScript then
+		theToolbarButton.Text = "Add to Toolbar"
+		return
+	end
+
+	theToolbarButton.Text = if ToolbarButton.GetButton(activeScript.Name) then "Remove from Toolbar" else "Add to Toolbar"
+end
+
+theToolbarButton.Activated:Connect(function()
+	if not activeScript then
+		return
+	end
+
+	if ToolbarButton.GetButton(activeScript.Name) then
+		Prompt.ShowConfirmationPrompt(widget, "Remove from Toolbar", "NOTE: Due to a Roblox bug, you must reload the plugin for this to take effect.", function(response)
+			if response == "OK" then
+				ToolbarButton.Remove(activeScript.Name)
+				updateTheToolbarButton()
+			end
+		end)
+	else
+		local inputs = {
+			Icon = "",
+			Tooltip = "",
+		}
+
+		Prompt.ShowInputPrompt(widget, "Add to Toolbar", inputs, function(response)
+			if response == "OK" then
+				ToolbarButton.Add(activeScript, inputs)
+				updateTheToolbarButton()
+			end
+		end)
+	end
+end)
+
 local function setScriptArgument(scriptFile: ModuleScript, name: string, value: string | number | boolean): ()
 	scriptFile:SetAttribute(name, value)
 end
@@ -396,6 +467,7 @@ local function setActiveScript(scriptFile: ModuleScript?): ()
 	activeScript = scriptFile
 	setEditorTitle(scriptFile)
 	setArguments(scriptFile)
+	updateTheToolbarButton()
 end
 
 local function uiPromptDelete(scriptFile: ModuleScript): ()
@@ -524,28 +596,6 @@ for _, scriptFile in ScriptFile.GetScripts() do
 	end
 end
 
-local actionsFrame = BackgroundFrame({
-	Transparency = 1,
-	Size = UDim2.fromScale(1, 0.4),
-	Position = UDim2.new(0, 0, 0.1, 16),
-
-	SizeConstraints = {
-		Max = Vector2.new(math.huge, 120),
-	},
-
-	LayoutOrder = 2,
-
-	Name = "Actions",
-	Parent = codeActionsFrame,
-})
-
-AddListLayout(actionsFrame, {
-	Padding = UDim.new(0, 4),
-	FillDirection = Enum.FillDirection.Vertical,
-	HorizontalAlignment = Enum.HorizontalAlignment.Center,
-	VerticalAlignment = Enum.VerticalAlignment.Center,
-})
-
 local openButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(1, 0.3),
@@ -591,36 +641,6 @@ executeButton.Activated:Connect(function()
 		return
 	end
 	uiExecute(activeScript)
-end)
-
-local theToolbarButton = BaseText(Instance.new("TextButton"), {
-	BaseGui = {
-		Size = UDim2.fromScale(1, 0.3),
-
-		Name = "AddToToolbarButton",
-		Parent = actionsFrame :: Instance,
-
-		LayoutOrder = 1,
-	},
-
-	Text = "Add to Toolbar"
-})
-
-theToolbarButton.Activated:Connect(function()
-	if not activeScript then
-		return
-	end
-
-	local inputs = {
-		Icon = "",
-		Tooltip = "",
-	}
-
-	Prompt.ShowInputPrompt(widget, "Add to Toolbar", inputs, function(response)
-		if response == "OK" then
-			ToolbarButton.Add(activeScript, inputs)
-		end
-	end)
 end)
 
 frame.Parent = widget
