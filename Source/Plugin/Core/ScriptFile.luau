@@ -4,6 +4,7 @@ local GetPlugin = require("../../Lib/GetPlugin")
 local Arguments = require("./Arguments")
 local DefaultScript = require("./DefaultScript")
 local PluginStorage = require("./PluginStorage")
+local ToolbarButton = require("./ToolbarButton")
 
 local ScriptFile = {}
 
@@ -28,6 +29,15 @@ function ScriptFile.GetScripts(): {ModuleScript}
 	return scripts
 end
 
+function ScriptFile.Delete(scriptFile: ModuleScript): ()
+	scriptFile:Destroy()
+
+	local button = ToolbarButton.GetButton(scriptFile.Name)
+	if button then
+		ToolbarButton.Remove(scriptFile.Name)
+	end
+end
+
 function ScriptFile.AddScript(name: string, scriptData: DefaultScript.ScriptData): ModuleScript
 	assert(not ScriptFile.GetScript(name), "Script with name '" .. name .. "' already exists")
 
@@ -37,6 +47,10 @@ function ScriptFile.AddScript(name: string, scriptData: DefaultScript.ScriptData
 
 	for k, v in scriptData.Arguments do
 		scriptFile:SetAttribute(k, v)
+	end
+
+	if scriptData.ToolbarButton then
+		ToolbarButton.Add(scriptFile, scriptData.ToolbarButton)
 	end
 
 	scriptFile.Parent = scriptFolder

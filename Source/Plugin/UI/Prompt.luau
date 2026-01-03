@@ -1,7 +1,9 @@
+local AddListLayout = require("./AddEffects/AddListLayout")
 local AddStroke = require("./AddEffects/AddStroke")
 local BaseGui = require("./BaseGui")
 local BackgroundFrame = require("./BackgroundFrame")
 local BaseText = require("./BaseText")
+local InputUI = require("./InputUI")
 local module = {}
 
 export type Response = "OK" | "Cancel"
@@ -186,6 +188,65 @@ function module.ShowConfirmationPrompt(widget: DockWidgetPluginGui, title: strin
 	end
 
 	messageObject = messageLabel
+
+	confirmConn = confirmButton.Activated:Connect(runAndClose(onResponse, "OK"))
+	cancelConn = cancelButton.Activated:Connect(runAndClose(onResponse, "Cancel"))
+
+	backgroundFrame.Visible = true
+	backgroundFrame.Parent = widget
+end
+
+function module.ShowInputPrompt(widget: DockWidgetPluginGui, title: string, inputs: {[string]: InputUI.PossibleInputs}, onResponse: (response: Response) -> (), okText: string?, cancelText: string?): ()
+	reset()
+
+	titleLabel.Text = title
+
+	if okText then
+		confirmButton.Text = okText
+	end
+
+	if cancelText then
+		cancelButton.Text = cancelText
+	end
+
+	local inputFrame = BaseGui(Instance.new("Frame"), {
+		Transparency = 1,
+		Position = UDim2.fromScale(0, 0.25),
+		Size = UDim2.fromScale(1, 0.25),
+
+		ZIndex = 11,
+
+		Name = "InputFrame",
+		Parent = frame :: Instance,
+	})
+
+	AddListLayout(inputFrame, {
+		FillDirection = Enum.FillDirection.Vertical,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		Padding = UDim.new(0, 5),
+		VerticalAlignment = Enum.VerticalAlignment.Top,
+	})
+
+	for name, default in inputs do
+		local input = InputUI.CreateInput(name, default, default, function(value)
+			inputs[name] = value
+		end, function(reason)
+			module.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
+		end)
+
+		input.Size = UDim2.fromScale(1, 0.5)
+
+		for _, v in input:GetDescendants() do
+			if v:IsA("GuiObject") then
+				v.ZIndex = 12
+			end
+		end
+		input.ZIndex = 12
+
+		input.Parent = inputFrame
+	end
+
+	messageObject = inputFrame
 
 	confirmConn = confirmButton.Activated:Connect(runAndClose(onResponse, "OK"))
 	cancelConn = cancelButton.Activated:Connect(runAndClose(onResponse, "Cancel"))

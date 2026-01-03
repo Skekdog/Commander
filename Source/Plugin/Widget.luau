@@ -5,11 +5,13 @@ local ScriptFile = require("./Core/ScriptFile")
 local Arguments = require("./Core/Arguments")
 local CodeContainsDestroy = require("./Core/CodeContainsDestroy")
 local DefaultScript = require("./Core/DefaultScript")
+local ToolbarButton = require("./Core/ToolbarButton")
 local AddAspectRatio = require("./UI/AddEffects/AddAspectRatio")
 local AddListLayout = require("./UI/AddEffects/AddListLayout")
 local BackgroundFrame = require("./UI/BackgroundFrame")
 local BaseGui = require("./UI/BaseGui")
 local BaseText = require("./UI/BaseText")
+local InputUI = require("./UI/InputUI")
 local Prompt = require("./UI/Prompt")
 local ScrollFrame = require("./UI/ScrollFrame")
 local Style = require("./UI/Style")
@@ -19,12 +21,6 @@ local plugin = GetPlugin
 local module = {}
 
 local activeScript: ModuleScript?
-
-local CHECKBOX_ON_DARK = "rbxasset://studio_svg_textures/Shared/Utility/Dark/Standard/CheckboxOn@3x.png"
-local CHECKBOX_OFF_DARK = "rbxasset://studio_svg_textures/Shared/Utility/Dark/Standard/CheckboxOff@3x.png"
-
-local CHECKBOX_ON_LIGHT = "rbxasset://studio_svg_textures/Shared/Utility/Light/Standard/CheckboxOn@3x.png"
-local CHECKBOX_OFF_LIGHT = "rbxasset://studio_svg_textures/Shared/Utility/Light/Standard/CheckboxOff@3x.png"
 
 local widget = plugin:CreateDockWidgetPluginGuiAsync("Commander", DockWidgetPluginGuiInfo.new(
 	Enum.InitialDockState.Float,
@@ -364,216 +360,8 @@ local argumentsFrame = ScrollFrame({
 	}
 })
 
-AddListLayout(argumentsFrame, {
-	FillDirection = Enum.FillDirection.Vertical,
-	HorizontalAlignment = Enum.HorizontalAlignment.Left,
-	VerticalAlignment = Enum.VerticalAlignment.Top,
-	Padding = UDim.new(0, 4),
-})
-
-type ArgumentFrame = {
-	Value: ImageButton | TextBox,
-	Label: TextLabel,
-} & Frame
-
-local textBoxArgument = BackgroundFrame({
-	Transparency = 1,
-	Size = UDim2.fromScale(1, 0.125),
-
-	NoStroke = true,
-
-	Name = "TextBoxArgument",
-}) :: ArgumentFrame
-
-AddListLayout(textBoxArgument, {
-	FillDirection = Enum.FillDirection.Horizontal,
-	HorizontalAlignment = Enum.HorizontalAlignment.Right,
-	VerticalAlignment = Enum.VerticalAlignment.Center,
-	HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween,
-	Padding = UDim.new(0, 4),
-})
-
-do
-	local value = BaseText(Instance.new("TextBox"), {
-		BaseGui = {
-			Size = UDim2.new(0, 40, 1, 0),
-
-			PaddingParams = {
-				Left = UDim.new(0, 2),
-				Right = UDim.new(0, 2),
-				Top = UDim.new(0, 2),
-				Bottom = UDim.new(0, 2),
-			},
-
-			LayoutOrder = 1,
-
-			Name = "Value",
-			Parent = textBoxArgument,
-		},
-		Text = "text",
-		TextXAlignment = Enum.TextXAlignment.Right,
-	})
-
-	local label = BaseText(Instance.new("TextLabel"), {
-		BaseGui = {
-			Size = UDim2.fromScale(0, 1),
-			AutomaticSize = Enum.AutomaticSize.X,
-
-			NoStroke = true,
-
-			Name = "Label",
-			Parent = textBoxArgument,
-		},
-		Text = "Text: ",
-		TextXAlignment = Enum.TextXAlignment.Left,
-	})
-
-	local flex = Instance.new("UIFlexItem")
-	flex.FlexMode = Enum.UIFlexMode.Shrink
-	flex.Parent = label
-
-	flex = Instance.new("UIFlexItem")
-	flex.FlexMode = Enum.UIFlexMode.Grow
-	flex.Parent = value
-end
-
-local booleanArgument = textBoxArgument:Clone()
-
-local function getCheckboxImage(enabled: boolean, isDark: boolean): string
-	if enabled then
-		if isDark then
-			return CHECKBOX_ON_DARK
-		else
-			return CHECKBOX_ON_LIGHT
-		end
-	else
-		if isDark then
-			return CHECKBOX_OFF_DARK
-		else
-			return CHECKBOX_OFF_LIGHT
-		end
-	end
-end
-
-do
-	booleanArgument.Name = "BooleanArgument"
-	booleanArgument.Value:Destroy()
-
-	Style(booleanArgument)
-	Style(booleanArgument.Label)
-
-	local value = BaseGui(Instance.new("ImageButton"), {
-		Name = "Value",
-		Parent = booleanArgument,
-
-		Size = UDim2.new(0, 40, 1, 0),
-
-		Transparency = 1,
-
-		CornerRadius = UDim.new(0, 0),
-		NoStroke = true,
-	})
-
-	value.Image = CHECKBOX_ON_DARK
-
-	AddAspectRatio(value, {
-		Type = Enum.AspectType.ScaleWithParentSize,
-	})
-end
-
-type ScriptArgument = {
-	GetValue: () -> Arguments.ArgumentValue,
-	Argument: Arguments.Argument,
-}
-
 local function setScriptArgument(scriptFile: ModuleScript, name: string, value: string | number | boolean): ()
 	scriptFile:SetAttribute(name, value)
-end
-
-local function addArgument(argument: Arguments.Argument, scriptFile: ModuleScript): ()
-	local argumentFrame: ArgumentFrame
-	if typeof(argument.Default) == "boolean" then
-		argumentFrame = booleanArgument:Clone()
-	else
-		argumentFrame = textBoxArgument:Clone()
-	end
-
-	local value = scriptFile:GetAttribute(argument.Name)
-	assert(typeof(value) == "string" or typeof(value) == "number" or typeof(value) == "boolean" or value == nil, "Invalid argument type")
-
-	if value == nil then
-		value = argument.Default
-	end
-
-	local valueObject: ImageButton | TextBox = argumentFrame.Value
-	local label = argumentFrame.Label :: TextLabel
-
-	label.Text = argument.Name:gsub("_", " ") .. ": "
-
-	local function setBooleanValue(): ()
-		assert(valueObject:IsA("ImageButton") and typeof(value) == "boolean")
-		local theme = settings().Studio.Theme
-		local isDark = theme.Name == "Dark"
-		valueObject.Image = getCheckboxImage(value, isDark)
-		setScriptArgument(scriptFile, argument.Name, value)
-	end
-
-	local function setTextValue(): ()
-		assert(valueObject:IsA("TextBox") and (typeof(value) == "string" or typeof(value) == "number"))
-		valueObject.Text = tostring(value)
-		setScriptArgument(scriptFile, argument.Name, value)
-	end
-
-	Style(valueObject, if valueObject:IsA("ImageButton") then {
-		Image = function(theme)
-			local enabled = valueObject.Image == CHECKBOX_ON_DARK or valueObject.Image == CHECKBOX_ON_LIGHT
-			local isDark = theme.Name == "Dark"
-			return getCheckboxImage(enabled, isDark)
-		end
-	} else nil)
-
-	Style(label)
-
-	if typeof(argument.Default) == "boolean" then
-		assert(valueObject:IsA("ImageButton") and typeof(value) == "boolean")
-		setBooleanValue()
-
-		valueObject.Activated:Connect(function()
-			value = not value
-			setBooleanValue()
-		end)
-	else
-		assert(valueObject:IsA("TextBox"))
-		valueObject.PlaceholderText = if typeof(argument.Default) == "number" then "Enter a number" else "Enter a string"
-		setTextValue()
-
-		if typeof(argument.Default) == "number" then
-			local box = valueObject :: TextBox -- type narrowing fails here, don't know why
-			setScriptArgument(scriptFile, argument.Name, tonumber(box.Text) or error("Invalid number"))
-
-			local lastSaneValue = box.Text
-
-			box.FocusLost:Connect(function()
-				if not tonumber(box.Text) then
-					box.Text = lastSaneValue
-					Prompt.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
-				else
-					lastSaneValue = box.Text
-					setScriptArgument(scriptFile, argument.Name, box.Text)
-				end
-			end)
-		elseif typeof(argument.Default) == "string" then
-			local box = valueObject :: TextBox
-			setScriptArgument(scriptFile, argument.Name, box.Text)
-
-			box.FocusLost:Connect(function()
-				setScriptArgument(scriptFile, argument.Name, box.Text)
-			end)
-		end
-	end
-
-	argumentFrame.Name = argument.Name .. "_ArgumentFrame"
-	argumentFrame.Parent = argumentsFrame
 end
 
 local function setEditorTitle(scriptFile: ModuleScript?): ()
@@ -594,7 +382,13 @@ local function setArguments(scriptFile: ModuleScript?): ()
 
 	local arguments = Arguments.GetDefinedArguments(ScriptEditorService:GetEditorSource(scriptFile))
 	for _, argument in arguments do
-		addArgument(argument, scriptFile)
+		InputUI.CreateInput(argument.Name, scriptFile:GetAttribute(argument.Name), argument.Default, function(input)
+			setScriptArgument(scriptFile, argument.Name, input)
+		end, function(reason)
+			if reason == "InvalidNumber" then
+				Prompt.ShowConfirmationPrompt(widget, "Number expected", "Please enter a valid number", function(response) end)
+			end
+		end).Parent = argumentsFrame
 	end
 end
 
@@ -799,7 +593,7 @@ executeButton.Activated:Connect(function()
 	uiExecute(activeScript)
 end)
 
-local addToToolbarButton = BaseText(Instance.new("TextButton"), {
+local theToolbarButton = BaseText(Instance.new("TextButton"), {
 	BaseGui = {
 		Size = UDim2.fromScale(1, 0.3),
 
@@ -811,6 +605,23 @@ local addToToolbarButton = BaseText(Instance.new("TextButton"), {
 
 	Text = "Add to Toolbar"
 })
+
+theToolbarButton.Activated:Connect(function()
+	if not activeScript then
+		return
+	end
+
+	local inputs = {
+		Icon = "",
+		Tooltip = "",
+	}
+
+	Prompt.ShowInputPrompt(widget, "Add to Toolbar", inputs, function(response)
+		if response == "OK" then
+			ToolbarButton.Add(activeScript, inputs)
+		end
+	end)
+end)
 
 frame.Parent = widget
 

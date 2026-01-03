@@ -1,8 +1,10 @@
 local Arguments = require("./Arguments")
+local ToolbarButton = require("./ToolbarButton")
 
 export type ScriptData = {
 	Source: string,
 	Arguments: {[string]: Arguments.ArgumentValue},
+	ToolbarButton: ToolbarButton.Parameters?,
 }
 
 local helloWorldSource = [[
