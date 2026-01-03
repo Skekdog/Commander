@@ -436,15 +436,19 @@ theToolbarButton.Activated:Connect(function()
 			end
 		end)
 	else
-		local inputs = {
-			Icon = "",
-			Tooltip = "",
-		}
+		Prompt.ShowConfirmationPrompt(widget, "WARNING", "Adding to the toolbar is a BETA feature, it may not work properly!", function(betaResponse)
+			if betaResponse == "OK" then
+				local inputs = {
+					Icon = "",
+					Tooltip = "",
+				}
 
-		Prompt.ShowInputPrompt(widget, "Add to Toolbar", inputs, function(response)
-			if response == "OK" then
-				ToolbarButton.Add(activeScript, inputs)
-				updateTheToolbarButton()
+				Prompt.ShowInputPrompt(widget, "Add to Toolbar", inputs, function(response)
+					if response == "OK" then
+						ToolbarButton.Add(activeScript, inputs)
+						updateTheToolbarButton()
+					end
+				end)
 			end
 		end)
 	end
