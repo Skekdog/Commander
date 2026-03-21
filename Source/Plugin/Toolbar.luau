@@ -5,7 +5,7 @@ local plugin = GetPlugin
 local module = {}
 
 local toolbar = plugin:CreateToolbar("Commander")
-local button = toolbar:CreateButton("Commander", "Opens the Commander menu", "rbxassetid://98437777079341")
+local button = toolbar:CreateButton("Commander", "Opens the Commander menu", "rbxassetid://96926456693748")
 button.ClickableWhenViewportHidden = true
 
 module.Toolbar = toolbar
