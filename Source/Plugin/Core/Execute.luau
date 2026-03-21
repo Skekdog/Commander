@@ -1,7 +1,13 @@
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local RunService = game:GetService("RunService")
+local GetPlugin = require("../../Lib/GetPlugin")
 
-local getArgFunction = "local function GETARG(name) local value = script:GetAttribute(name) if value == nil then error('Unknown argument: ' .. name) end return value end "
+local getArgFunction = "local function GETARG(name) local value = script:GetAttribute(name) if value == nil then error('Unknown argument: ' .. name) end return value end"
+
+-- Alternatively we could parent the created script to the Plugin and use GetPlugin, but then we have to worry about parenting.
+local pluginGlobal = "local plugin = script.Plugin.Value"
+
+local scriptHead = getArgFunction .. "\n" .. pluginGlobal .. "\n"
 
 local function Execute(code: string, attributes: {[string]: any}?, name: string): ()
 	local recording: string?
@@ -17,13 +23,18 @@ local function Execute(code: string, attributes: {[string]: any}?, name: string)
 		local newScript = Instance.new("ModuleScript")
 		newScript.Name = name
 
+		local pluginValue = Instance.new("ObjectValue")
+		pluginValue.Value = GetPlugin
+		pluginValue.Name = "Plugin"
+		pluginValue.Parent = newScript
+
 		for name, value in attributes or {} :: {[string] : any} do
 			newScript:SetAttribute(name, value)
 		end
 
-		local withGetArgFunction = getArgFunction .. code
+		local withHead = scriptHead .. code
 
-		local withReturn = withGetArgFunction .. "\nreturn nil" -- Newline so that any comments on the last line don't mess things up
+		local withReturn = withHead .. "\nreturn nil" -- Newline so that any comments on the last line don't mess things up
 		newScript.Source = withReturn;
 		(require)(newScript)
 
