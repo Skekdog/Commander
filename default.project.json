@@ -2,6 +2,9 @@
 	"name": "Commander",
 	"emitLegacyScripts": false,
 	"tree": {
-		"$path": "Source"
+		"$path": "Source",
+		"Packages": {
+			"$path": "Packages"
+		}
 	}
 }

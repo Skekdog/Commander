@@ -1,0 +1,8 @@
+[package]
+name = "admin/commander"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+fluid = "ffrostfall/fluid@0.7.0-rc.7"
