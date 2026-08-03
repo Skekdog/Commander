@@ -29,6 +29,7 @@ local fs = require("@lune/fs")
 local net = require("@lune/net")
 local process = require("@lune/process")
 local task = require("@lune/task")
+local serde = require("@lune/serde")
 
 local ROBLOX_API_KEY = assert(process.env.ROBLOX_API_KEY, "Missing ENV variable: ROBLOX_API_KEY")
 local UNIVERSE_ID = 4059912034
@@ -70,7 +71,7 @@ local function uploadPlaceFile(universeId: number, placeId: number, placeFile: s
 
 	if response.ok then
 		print("Place file upload succeeded", response.body)
-		return net.jsonDecode(response.body)["versionNumber"]
+		return serde.decode("json", response.body)["versionNumber"]
 	else
 		error(`uploadPlaceFile failed: {response.statusCode} - {response.statusMessage}: {response.body}`)
 	end
@@ -84,7 +85,7 @@ local function createTask(universeId: number, placeId: number, placeVersion: num
 			["Content-Type"] = "application/json",
 			["X-API-Key"] = ROBLOX_API_KEY,
 		},
-		body = net.jsonEncode({
+		body = serde.encode("json", {
 			script = scriptContents,
 		}),
 	})
@@ -93,7 +94,7 @@ local function createTask(universeId: number, placeId: number, placeVersion: num
 		error(`Create task request failed: {response.body}`)
 	end
 
-	return net.jsonDecode(response.body)
+	return serde.decode("json", response.body)
 end
 
 local function pollForTaskCompletion(taskPath: string)
@@ -112,7 +113,7 @@ local function pollForTaskCompletion(taskPath: string)
 			error(`Poll task completion failed: {response.body}`)
 		end
 
-		local cloudTask = net.jsonDecode(response.body)
+		local cloudTask = serde.decode("json", response.body)
 		if cloudTask.state ~= "PROCESSING" then
 			return cloudTask
 		else
@@ -135,7 +136,7 @@ local function getTaskLogs(taskPath: string)
 		error(`Get task logs failed: {response.body}`)
 	end
 
-	return table.concat(net.jsonDecode(response.body).luauExecutionSessionTaskLogs[1].messages, "\n")
+	return table.concat(serde.decode("json", response.body).luauExecutionSessionTaskLogs[1].messages, "\n")
 end
 
 local function runLuauTask(universeId: number, placeId: number, placeVersion: number, scriptContents: string)

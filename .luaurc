@@ -4,5 +4,5 @@
     "lintErrors": false,
     "typeErrors": true,
     "globals": [],
-    "aliases": {"lune": "~/.lune/.typedefs/0.8.9/"}
+    "aliases": {"lune": "~/.lune/.typedefs/0.10.5/"}
 }
