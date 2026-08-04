@@ -1,12 +1,12 @@
 local GetPlugin = require("../Lib/GetPlugin")
 local fluid = require("../Packages/fluid")
+local ScriptFile = require("./Core/ScriptFile")
 local LayoutFrame = require("./UI/Components/LayoutFrame")
-local TextButton = require("./UI/Components/TextButton")
-local TextSize = require("./UI/TextSize")
+local ScriptEntry = require("./UI/Components/ScriptEntry")
 
 local plugin = GetPlugin
 
-local module = {}
+_G.__DEV__ = true
 
 local widget = plugin:CreateDockWidgetPluginGuiAsync("Commander", DockWidgetPluginGuiInfo.new(
 	Enum.InitialDockState.Float,
@@ -24,8 +24,12 @@ widget.Title = "Commander"
 widget.ResetOnSpawn = false
 widget.Enabled = false
 
-fluid.root(function()
-	fluid.create "Frame" {
+local module = {}
+
+local function commander(props: {
+	Scripts: () -> {ModuleScript},
+})
+	return fluid.create "Frame" {
 		Size = UDim2.fromScale(0.5, 1),
 		BackgroundTransparency = 1,
 
@@ -35,7 +39,7 @@ fluid.root(function()
 			Size = UDim2.fromScale(1, 1),
 			Position = UDim2.new(),
 
-			Padding = 10,
+			Padding = 4,
 
 			fluid.create "UIListLayout" {
 				HorizontalAlignment = Enum.HorizontalAlignment.Center,
@@ -44,15 +48,28 @@ fluid.root(function()
 				Padding = UDim.new(0, 6)
 			},
 
-			TextButton {
-				Text = "hi there hello",
-				Position = UDim2.new(),
-				Size = UDim2.fromScale(0.8, 0),
-
-				TextSize = TextSize.Body,
-			},
+			fluid.for_keys(props.Scripts, function(instance, i)
+				return ScriptEntry {
+					Script = instance(),
+					Activated = function()
+						print(i)
+					end,
+				}
+			end) :: any,
 		}
 	}
+end
+
+local function app()
+	local scripts = ScriptFile.Scripts
+
+	return commander {
+		Scripts = scripts,
+	}
+end
+
+fluid.root(function()
+	app().Parent = widget
 end)
 
 function module.ToggleWidget(enabled: boolean?): ()

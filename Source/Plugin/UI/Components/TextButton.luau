@@ -6,6 +6,8 @@ local function TextButton(props: {
 	Size: fluid.UsedAs<UDim2>,
 	Position: fluid.UsedAs<UDim2>,
 	TextSize: fluid.UsedAs<number>,
+
+	Activated: (...unknown) -> (),
 })
 
 	return fluid.create "TextButton" {
@@ -19,6 +21,8 @@ local function TextButton(props: {
 		TextWrapped = true,
 
 		TextSize = props.TextSize,
+
+		Activated = props.Activated,
 
 		BackgroundColor3 = getNextColour(),
 

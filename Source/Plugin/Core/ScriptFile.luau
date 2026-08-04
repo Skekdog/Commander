@@ -5,6 +5,7 @@ local Arguments = require("./Arguments")
 local DefaultScript = require("./DefaultScript")
 local PluginStorage = require("./PluginStorage")
 local ToolbarButton = require("./ToolbarButton")
+local fluid = require("../../Packages/fluid")
 
 local ScriptFile = {}
 
@@ -29,8 +30,16 @@ function ScriptFile.GetScripts(): {ModuleScript}
 	return scripts
 end
 
+ScriptFile.Scripts = fluid.source(ScriptFile.GetScripts())
+
 function ScriptFile.Delete(scriptFile: ModuleScript): ()
 	scriptFile:Destroy()
+
+	local index = table.find(ScriptFile.Scripts(), scriptFile)
+	if index then
+		table.remove(ScriptFile.Scripts(), index)
+		ScriptFile.Scripts(ScriptFile.Scripts())
+	end
 
 	local button = ToolbarButton.Get(scriptFile.Name)
 	if button then
@@ -52,6 +61,9 @@ function ScriptFile.AddScript(name: string, scriptData: DefaultScript.ScriptData
 	if scriptData.ToolbarButton then
 		ToolbarButton.Add(scriptFile, scriptData.ToolbarButton)
 	end
+
+	table.insert(ScriptFile.Scripts(), scriptFile)
+	ScriptFile.Scripts(ScriptFile.Scripts())
 
 	scriptFile.Parent = scriptFolder
 
