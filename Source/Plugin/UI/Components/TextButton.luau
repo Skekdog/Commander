@@ -4,10 +4,12 @@ local getNextColour = require("./getNextColour")
 local function TextButton(props: {
 	Text: fluid.UsedAs<string>,
 	Size: fluid.UsedAs<UDim2>,
-	Position: fluid.UsedAs<UDim2>,
+	Position: fluid.UsedAs<UDim2>?,
 	TextSize: fluid.UsedAs<number>,
 
 	Activated: (...unknown) -> (),
+
+	[number]: Instance,
 })
 
 	return fluid.create "TextButton" {
@@ -33,7 +35,9 @@ local function TextButton(props: {
 		fluid.create "UIStroke" {
 			Thickness = 2,
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		}
+		},
+
+		table.unpack(props),
 	}
 end
 

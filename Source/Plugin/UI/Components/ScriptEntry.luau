@@ -1,5 +1,7 @@
 local fluid = require("../../../Packages/fluid")
 local TextSize = require("../TextSize")
+local Padding = require("./Padding")
+local ScriptActionButton = require("./ScriptActionButton")
 local TextButton = require("./TextButton")
 
 local function ScriptEntry(props: {
@@ -12,12 +14,49 @@ local function ScriptEntry(props: {
 	end)
 
 	return TextButton {
-		Position = UDim2.new(),
+		Text = "",
 		Size = UDim2.fromScale(1, 0),
-		Text = scriptName,
 		TextSize = TextSize.Body,
 
 		Activated = props.Activated,
+
+		fluid.create "UIListLayout" {
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			FillDirection = Enum.FillDirection.Horizontal,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		},
+
+		fluid.create "TextLabel" {
+			BackgroundTransparency = 1,
+
+			Text = scriptName,
+			TextSize = TextSize.Body,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextWrapped = true,
+
+			Font = Enum.Font.BuilderSans,
+
+			AutomaticSize = Enum.AutomaticSize.Y,
+
+			fluid.create "UIFlexItem" {
+				FlexMode = Enum.UIFlexMode.Fill,
+			},
+		},
+
+		ScriptActionButton {
+			Content = Content.fromAssetId(8517323790),
+		},
+
+		ScriptActionButton {
+			Content = Content.fromAssetId(15911231575),
+		},
+
+		ScriptActionButton {
+			Content = Content.fromAssetId(11768918600),
+		},
+
+		Padding(2),
 	}
 end
 
