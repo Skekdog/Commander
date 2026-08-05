@@ -30,7 +30,7 @@ local function ScriptActions(props: {
 		fluid.create "TextBox" {
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
-			TextSize = TextSize.Body,
+			TextSize = TextSize.MainButton,
 			Font = Enum.Font.BuilderSans,
 
 			PlaceholderText = "Script Name",

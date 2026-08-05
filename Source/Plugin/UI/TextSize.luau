@@ -1,5 +1,6 @@
 const TEXT_SIZE = {
-	Body = 24,
+	MainButton = 24,
+	ArgumentInput = 20,
 }
 
 return table.freeze(TEXT_SIZE)

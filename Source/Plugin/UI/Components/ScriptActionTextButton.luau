@@ -11,7 +11,7 @@ local function ScriptActionTextButton(props: {
 
 		Size = UDim2.fromScale(1, 0),
 
-		TextSize = TextSize.Body,
+		TextSize = TextSize.MainButton,
 	}
 end
 

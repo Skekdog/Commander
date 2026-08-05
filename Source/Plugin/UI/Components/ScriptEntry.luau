@@ -16,7 +16,7 @@ local function ScriptEntry(props: {
 	return TextButton {
 		Text = "",
 		Size = UDim2.fromScale(1, 0),
-		TextSize = TextSize.Body,
+		TextSize = TextSize.MainButton,
 
 		Activated = props.Activated,
 
@@ -31,7 +31,7 @@ local function ScriptEntry(props: {
 			BackgroundTransparency = 1,
 
 			Text = scriptName,
-			TextSize = TextSize.Body,
+			TextSize = TextSize.MainButton,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextWrapped = true,
 

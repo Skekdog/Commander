@@ -9,7 +9,7 @@ local function ScriptActionImageButton(props: {
 		BackgroundTransparency = 1,
 
 		ScaleType = Enum.ScaleType.Fit,
-		Size = UDim2.fromOffset(0, TextSize.Body),
+		Size = UDim2.fromOffset(0, TextSize.MainButton),
 
 		fluid.create "UIAspectRatioConstraint" {
 			AspectRatio = 1,
