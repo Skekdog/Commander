@@ -1,7 +1,7 @@
 local fluid = require("../../../Packages/fluid")
 local TextSize = require("../TextSize")
 
-local function ScriptActionButton(props: {
+local function ScriptActionImageButton(props: {
 	Content: Content,
 })
 	return fluid.create "ImageButton" {
@@ -19,4 +19,4 @@ local function ScriptActionButton(props: {
 	}
 end
 
-return ScriptActionButton
+return ScriptActionImageButton

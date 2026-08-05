@@ -4,7 +4,7 @@ local getNextColour = require("./getNextColour")
 
 local function LayoutFrame(props: {
 	Size: fluid.UsedAs<UDim2>,
-	Position: fluid.UsedAs<UDim2>,
+	Position: fluid.UsedAs<UDim2>?,
 
 	Padding: Padding.PaddingProperty?,
 
@@ -12,7 +12,7 @@ local function LayoutFrame(props: {
 }): ScrollingFrame | Frame
 	local scrollingFrameProperties: fluid.PropertiesFor<"ScrollingFrame"> = {
 		CanvasSize = UDim2.new(),
-		AutomaticCanvasSize = Enum.AutomaticSize.XY,
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 
 		BackgroundColor3 = getNextColour(),
 
@@ -25,6 +25,7 @@ local function LayoutFrame(props: {
 	}
 
 	if props.Padding then
+		scrollingFrameProperties.BackgroundTransparency = 1
 		scrollingFrameProperties.Size = UDim2.fromScale(1, 1)
 
 		-- This will obviously seem strange, but there's a Roblox bug that makes scrolling frames and padding not go well (especially with list layout)

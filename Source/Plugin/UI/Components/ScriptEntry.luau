@@ -1,7 +1,7 @@
 local fluid = require("../../../Packages/fluid")
 local TextSize = require("../TextSize")
 local Padding = require("./Padding")
-local ScriptActionButton = require("./ScriptActionButton")
+local ScriptActionImageButton = require("./ScriptActionImageButton")
 local TextButton = require("./TextButton")
 
 local function ScriptEntry(props: {
@@ -44,15 +44,15 @@ local function ScriptEntry(props: {
 			},
 		},
 
-		ScriptActionButton {
+		ScriptActionImageButton {
 			Content = Content.fromAssetId(8517323790),
 		},
 
-		ScriptActionButton {
+		ScriptActionImageButton {
 			Content = Content.fromAssetId(15911231575),
 		},
 
-		ScriptActionButton {
+		ScriptActionImageButton {
 			Content = Content.fromAssetId(11768918600),
 		},
 

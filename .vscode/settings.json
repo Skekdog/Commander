@@ -1,4 +1,5 @@
 {
   "luau-lsp.completion.imports.stringRequires.enabled": true,
   "luau-lsp.fflags.enableNewSolver": true,
+  "luau-lsp.completion.imports.requireStyle": "alwaysRelative",
 }

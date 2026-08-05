@@ -65,52 +65,60 @@ function ScriptFile.AddScript(name: string, scriptData: DefaultScript.ScriptData
 	table.insert(ScriptFile.Scripts(), scriptFile)
 	ScriptFile.Scripts(ScriptFile.Scripts())
 
+	for i = 1, 10 do
+		local c = scriptFile:Clone()
+		c.Name = name .. i
+		c.Parent = scriptFolder
+
+		table.insert(ScriptFile.Scripts(), c)
+		ScriptFile.Scripts(ScriptFile.Scripts())
+	end
 	scriptFile.Parent = scriptFolder
 
 	return scriptFile
 end
 
-plugin.Unloading:Connect(function()
-	local oldScriptData = PluginStorage.GetScripts()
-	local scriptData: {[string]: DefaultScript.ScriptData} = {}
+-- plugin.Unloading:Connect(function()
+-- 	local oldScriptData = PluginStorage.GetScripts()
+-- 	local scriptData: {[string]: DefaultScript.ScriptData} = {}
 
-	for _, v in scriptFolder:GetChildren() do
-		assert(v:IsA("ModuleScript"))
+-- 	for _, v in scriptFolder:GetChildren() do
+-- 		assert(v:IsA("ModuleScript"))
 
-		local arguments: {[string]: Arguments.ArgumentValue} = {}
-		do
-			local attributes = v:GetAttributes()
-			local ranOnce = false
-			for _ in attributes do
-				ranOnce = true
-				break
-			end
+-- 		local arguments: {[string]: Arguments.ArgumentValue} = {}
+-- 		do
+-- 			local attributes = v:GetAttributes()
+-- 			local ranOnce = false
+-- 			for _ in attributes do
+-- 				ranOnce = true
+-- 				break
+-- 			end
 
-			if not ranOnce then
-				local data = oldScriptData[v.Name]
-				arguments = if data then data.Arguments else {}
-			else
-				arguments = attributes :: {[string]: Arguments.ArgumentValue}
-			end
-		end
+-- 			if not ranOnce then
+-- 				local data = oldScriptData[v.Name]
+-- 				arguments = if data then data.Arguments else {}
+-- 			else
+-- 				arguments = attributes :: {[string]: Arguments.ArgumentValue}
+-- 			end
+-- 		end
 
-		local toolbarButton = ToolbarButton.Get(v.Name)
+-- 		local toolbarButton = ToolbarButton.Get(v.Name)
 
-		scriptData[v.Name] = {
-			Source = ScriptEditorService:GetEditorSource(v),
-			Arguments = arguments,
-			ToolbarButton = if toolbarButton then toolbarButton.Parameters else nil,
-		}
+-- 		scriptData[v.Name] = {
+-- 			Source = ScriptEditorService:GetEditorSource(v),
+-- 			Arguments = arguments,
+-- 			ToolbarButton = if toolbarButton then toolbarButton.Parameters else nil,
+-- 		}
 
-		local openScript = ScriptEditorService:FindScriptDocument(v)
-		if openScript then
-			openScript:CloseAsync()
-		end
-	end
+-- 		local openScript = ScriptEditorService:FindScriptDocument(v)
+-- 		if openScript then
+-- 			openScript:CloseAsync()
+-- 		end
+-- 	end
 
-	PluginStorage.WriteScripts(scriptData)
-	scriptFolder:Destroy()
-end)
+-- 	PluginStorage.WriteScripts(scriptData)
+-- 	scriptFolder:Destroy()
+-- end)
 
 for name, scriptData in PluginStorage.GetScripts() do
 	ScriptFile.AddScript(name, scriptData)
