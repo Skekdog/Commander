@@ -1,10 +1,11 @@
 local fluid = require("../../../Packages/fluid")
+local OpenScript = require("../../Core/OpenScript")
 local LayoutFrame = require("./LayoutFrame")
 local ListLayout = require("./ListLayout")
 local ScriptEntry = require("./ScriptEntry")
 
 local function ScriptList(props: {
-	Scripts: () -> {ModuleScript},
+	Scripts: fluid.Source<{ModuleScript}>,
 	Size: fluid.UsedAs<UDim2>,
 	Position: fluid.UsedAs<UDim2>?,
 	ActiveScript: fluid.Source<ModuleScript>,
@@ -22,11 +23,14 @@ local function ScriptList(props: {
 			Padding = UDim.new(0, 2)
 		},
 
-		fluid.for_keys(props.Scripts, function(instance, i)
+		fluid.for_values(props.Scripts, function(instance)
 			return ScriptEntry {
-				Script = instance(),
+				Script = instance,
 				Activated = function()
-					props.ActiveScript(instance())
+					if props.ActiveScript() == instance then
+						return OpenScript(instance)
+					end
+					props.ActiveScript(instance)
 				end,
 			}
 		end) :: any,

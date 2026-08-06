@@ -4,6 +4,7 @@ local SquareAspectRatio = require("./SquareAspectRatio")
 
 local function ScriptActionImageButton(props: {
 	Content: Content,
+	Activated: (...unknown) -> (),
 })
 	return fluid.create "ImageButton" {
 		ImageContent = props.Content,
@@ -13,6 +14,8 @@ local function ScriptActionImageButton(props: {
 		Size = UDim2.fromOffset(0, TextSize.MainButton),
 
 		SquareAspectRatio(),
+
+		Activated = props.Activated,
 	}
 end
 

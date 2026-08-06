@@ -1,5 +1,6 @@
 local GetPlugin = require("../Lib/GetPlugin")
 local fluid = require("../Packages/fluid")
+local Arguments = require("./Core/Arguments")
 local CreateNewScript = require("./Core/CreateNewScript")
 local ScriptFile = require("./Core/ScriptFile")
 local ArgumentList = require("./UI/Components/ArgumentList")
@@ -33,9 +34,23 @@ widget.Enabled = false
 local module = {}
 
 local function commander(props: {
-	Scripts: () -> {ModuleScript},
+	Scripts: fluid.Source<{ModuleScript}>,
 })
 	local activeScript = fluid.source(props.Scripts()[1])
+	local arguments = fluid.source({
+		{
+			Default = "hi",
+			Name = "str",
+		},
+		{
+			Default = 1,
+			Name = "num",
+		},
+		{
+			Default = true,
+			Name = "bool",
+		},
+	} :: {Arguments.Argument})
 
 	return fluid.create "Frame" {
 		Size = UDim2.fromScale(1, 1),
@@ -78,20 +93,7 @@ local function commander(props: {
 			},
 
 			ArgumentList {
-				Arguments = {
-					{
-						Default = "hi",
-						Name = "str",
-					},
-					{
-						Default = 1,
-						Name = "num",
-					},
-					{
-						Default = true,
-						Name = "bool",
-					},
-				},
+				Arguments = arguments,
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 

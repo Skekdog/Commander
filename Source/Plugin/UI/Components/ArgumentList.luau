@@ -28,14 +28,13 @@ local function ArgumentList(props: {
 			FillDirection = Enum.FillDirection.Vertical,
 		},
 
-		fluid.for_keys(props.Arguments, function(argumentSource, i)
-			local argument: Arguments.Argument = argumentSource()
-
+		fluid.for_values(props.Arguments, function(argument: Arguments.Argument, i)
+			print(argument)
 			local name = function()
-				return argumentSource().Name
+				return argument.Name
 			end
 
-			local value = fluid.source(argumentSource().Default)
+			local value = fluid.source(argument.Default)
 
 			if typeof(argument.Default) == "string" then
 				return StringArgument {

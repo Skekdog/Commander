@@ -1,4 +1,6 @@
 local fluid = require("../../../Packages/fluid")
+local ExecuteScript = require("../../Core/ExecuteScript")
+local OpenScript = require("../../Core/OpenScript")
 local TextSize = require("../TextSize")
 local LayoutFrame = require("./LayoutFrame")
 local ListLayout = require("./ListLayout")
@@ -59,7 +61,9 @@ local function ScriptActions(props: {
 
 		ScriptActionTextButton {
 			Text = "Open",
-			Activated = function() end,
+			Activated = function()
+				OpenScript(props.ActiveScript())
+			end,
 		},
 
 		ScriptActionTextButton {
@@ -69,7 +73,9 @@ local function ScriptActions(props: {
 
 		ScriptActionTextButton {
 			Text = "Execute!",
-			Activated = function() end,
+			Activated = function()
+				ExecuteScript(props.ActiveScript())
+			end,
 		},
 
 		table.unpack(props),

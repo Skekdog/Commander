@@ -1,4 +1,7 @@
 local fluid = require("../../../Packages/fluid")
+local ExecuteScript = require("../../Core/ExecuteScript")
+local OpenScript = require("../../Core/OpenScript")
+local ScriptFile = require("../../Core/ScriptFile")
 local TextSize = require("../TextSize")
 local ListLayout = require("./ListLayout")
 local Padding = require("./Padding")
@@ -6,12 +9,12 @@ local ScriptActionImageButton = require("./ScriptActionImageButton")
 local TextButton = require("./TextButton")
 
 local function ScriptEntry(props: {
-	Script: Instance,
+	Script: ModuleScript,
 	Activated: (...unknown) -> (),
 })
-	local scriptName = fluid.source(props.Script.Name)
+	local name = fluid.source(props.Script.Name)
 	props.Script:GetPropertyChangedSignal("Name"):Connect(function()
-		scriptName(props.Script.Name)
+		name(props.Script.Name)
 	end)
 
 	return TextButton {
@@ -32,7 +35,7 @@ local function ScriptEntry(props: {
 		fluid.create "TextLabel" {
 			BackgroundTransparency = 1,
 
-			Text = scriptName,
+			Text = name,
 			TextSize = TextSize.MainButton,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextWrapped = true,
@@ -48,14 +51,24 @@ local function ScriptEntry(props: {
 
 		ScriptActionImageButton {
 			Content = Content.fromAssetId(8517323790),
+			Activated = function()
+				ExecuteScript(props.Script)
+			end,
 		},
 
 		ScriptActionImageButton {
 			Content = Content.fromAssetId(15911231575),
+			Activated = function()
+				OpenScript(props.Script)
+			end,
 		},
 
 		ScriptActionImageButton {
 			Content = Content.fromAssetId(11768918600),
+			Activated = function()
+				print(props.Script)
+				ScriptFile.Delete(props.Script)
+			end,
 		},
 
 		Padding(4),
