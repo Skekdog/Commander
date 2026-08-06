@@ -8,6 +8,11 @@ export type Argument = {
 	Default: ArgumentValue,
 }
 
+export type ArgumentT<T> = {
+	Name: string,
+	Default: T,
+}
+
 local function parseLine(line: string): Argument?
 	local originalLine = line
 	line = line:gsub("^%s+", "")

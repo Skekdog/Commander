@@ -41,10 +41,6 @@ local function ScriptActions(props: {
 
 			PlaceholderText = "Script Name",
 			Text = scriptName,
-
-			FocusLost = function()
-
-			end,
 		},
 
 		ScriptActionTextButton {

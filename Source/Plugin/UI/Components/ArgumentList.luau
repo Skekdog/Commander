@@ -30,29 +30,36 @@ local function ArgumentList(props: {
 
 		fluid.for_keys(props.Arguments, function(argumentSource, i)
 			local argument: Arguments.Argument = argumentSource()
+
+			local name = function()
+				return argumentSource().Name
+			end
+
+			local value = fluid.source(argumentSource().Default)
+
 			if typeof(argument.Default) == "string" then
 				return StringArgument {
-					Name = fluid.source(argument.Name),
-					Value = fluid.source(argument.Default),
+					Name = name,
+					Value = value :: fluid.Source<string>,
 					Size = UDim2.fromScale(1, 0),
 					AutomaticSize = Enum.AutomaticSize.Y,
 				}
 			elseif typeof(argument.Default) == "number" then
 				return NumberArgument {
-					Name = fluid.source(argument.Name),
-					Value = fluid.source(argument.Default),
+					Name = name,
+					Value = value :: fluid.Source<number>,
 					Size = UDim2.fromScale(1, 0),
 					AutomaticSize = Enum.AutomaticSize.Y,
 				}
 			elseif typeof(argument.Default) == "boolean" then
 				return BooleanArgument {
-					Name = fluid.source(argument.Name),
-					Value = fluid.source(argument.Default),
+					Name = name,
+					Value = value :: fluid.Source<boolean>,
 					Size = UDim2.fromScale(1, 0),
 					AutomaticSize = Enum.AutomaticSize.Y,
 				}
 			end
-			return nil :: any
+			error("Unknown argument type")
 		end) :: any,
 
 		table.unpack(props),

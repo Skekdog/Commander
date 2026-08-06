@@ -33,9 +33,15 @@ local function BooleanArgument(props: {
 			ScaleType = Enum.ScaleType.Fit,
 			Size = UDim2.fromOffset(0, TextSize.ArgumentInput),
 
+			BackgroundTransparency = 1,
+
 			ImageContent = image,
 
 			SquareAspectRatio(),
+
+			Activated = function()
+				props.Value(not props.Value())
+			end
 		}
 	}
 end

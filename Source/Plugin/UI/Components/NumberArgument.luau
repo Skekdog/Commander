@@ -3,6 +3,24 @@ local TextSize = require("../TextSize")
 local Argument = require("./Argument")
 local TextBox = require("./TextBox")
 
+local function focusLost(callback: fluid.Source<number>)
+	return fluid.action(function(instance)
+		assert(instance:IsA("TextBox"))
+
+		instance.FocusLost:Connect(function()
+			local text = instance.Text
+
+			local asNumber = tonumber(text)
+			if asNumber then
+				callback(asNumber)
+				return
+			end
+
+			instance.Text = tostring(callback())
+		end)
+	end)
+end
+
 local function NumberArgument(props: {
 	Size: fluid.UsedAs<UDim2>,
 	Position: fluid.UsedAs<UDim2>?,
@@ -13,6 +31,7 @@ local function NumberArgument(props: {
 	local text = function()
 		return tostring(props.Value())
 	end
+
 	return Argument<<number>> {
 		Name = props.Name,
 		Size = props.Size,
@@ -32,9 +51,7 @@ local function NumberArgument(props: {
 				FlexMode = Enum.UIFlexMode.Fill,
 			},
 
-			FocusLost = function()
-
-			end,
+			focusLost(props.Value),
 		},
 	}
 end

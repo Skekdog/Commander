@@ -9,7 +9,6 @@ local function Argument<T>(props: {
 	Position: fluid.UsedAs<UDim2>?,
 
 	Name: fluid.Source<string>,
-	Value: fluid.Source<T>,
 
 	Input: GuiObject,
 })

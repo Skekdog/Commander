@@ -3,6 +3,16 @@ local TextSize = require("../TextSize")
 local Argument = require("./Argument")
 local TextBox = require("./TextBox")
 
+local function focusLost(callback: fluid.Source<string>)
+	return fluid.action(function(instance)
+		assert(instance:IsA("TextBox"))
+
+		instance.FocusLost:Connect(function()
+			callback(instance.Text)
+		end)
+	end)
+end
+
 local function StringArgument(props: {
 	Size: fluid.UsedAs<UDim2>,
 	Position: fluid.UsedAs<UDim2>?,
@@ -29,9 +39,7 @@ local function StringArgument(props: {
 				FlexMode = Enum.UIFlexMode.Fill,
 			},
 
-			FocusLost = function()
-
-			end,
+			focusLost(props.Value)
 		},
 	}
 end

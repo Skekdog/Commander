@@ -10,9 +10,7 @@ local function TextBox(props: {
 	TextSize: fluid.UsedAs<number>,
 	TextXAlignment: fluid.UsedAs<Enum.TextXAlignment>?,
 
-	FocusLost: (enterPressed: boolean, ...unknown) -> (),
-
-	[number]: Instance,
+	[number]: Instance | fluid.Action,
 })
 	return fluid.create "TextBox" {
 		Size = props.Size,
@@ -25,8 +23,6 @@ local function TextBox(props: {
 		PlaceholderText = props.PlaceholderText,
 		TextSize = props.TextSize,
 		TextXAlignment = props.TextXAlignment,
-
-		FocusLost = props.FocusLost,
 
 		table.unpack(props),
 	}
