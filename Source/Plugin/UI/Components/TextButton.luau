@@ -7,6 +7,8 @@ local function TextButton(props: {
 	Position: fluid.UsedAs<UDim2>?,
 	TextSize: fluid.UsedAs<number>,
 
+	StrokePosition: fluid.UsedAs<Enum.BorderStrokePosition>?,
+
 	Activated: (...unknown) -> (),
 
 	[number]: Instance,
@@ -35,6 +37,7 @@ local function TextButton(props: {
 		fluid.create "UIStroke" {
 			Thickness = 2,
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			BorderStrokePosition = props.StrokePosition,
 		},
 
 		table.unpack(props),

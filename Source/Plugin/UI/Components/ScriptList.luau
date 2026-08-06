@@ -12,13 +12,13 @@ local function ScriptList(props: {
 		Size = props.Size,
 		Position = props.Position,
 
-		Padding = 4,
+		Padding = 2,
 
 		ListLayout {
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			FillDirection = Enum.FillDirection.Vertical,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
-			Padding = UDim.new(0, 6)
+			Padding = UDim.new(0, 2)
 		},
 
 		fluid.for_keys(props.Scripts, function(instance, i)

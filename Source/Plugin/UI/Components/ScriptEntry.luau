@@ -19,6 +19,8 @@ local function ScriptEntry(props: {
 		Size = UDim2.fromScale(1, 0),
 		TextSize = TextSize.MainButton,
 
+		StrokePosition = Enum.BorderStrokePosition.Inner,
+
 		Activated = props.Activated,
 
 		ListLayout {
@@ -56,7 +58,7 @@ local function ScriptEntry(props: {
 			Content = Content.fromAssetId(11768918600),
 		},
 
-		Padding(2),
+		Padding(4),
 	}
 end
 
