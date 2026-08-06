@@ -1,14 +1,19 @@
 local fluid = require("../../../Packages/fluid")
-local Execute = require("../../Core/Execute")
 local TextSize = require("../TextSize")
 local LayoutFrame = require("./LayoutFrame")
+local ListLayout = require("./ListLayout")
 local Padding = require("./Padding")
 local ScriptActionTextButton = require("./ScriptActionTextButton")
+local TextBox = require("./TextBox")
 
 local function ScriptActions(props: {
 	Position: fluid.UsedAs<UDim2>?,
 	Size: fluid.UsedAs<UDim2>,
+	AutomaticSize: fluid.UsedAs<Enum.AutomaticSize>?,
+
 	ActiveScript: fluid.Source<ModuleScript>,
+
+	[number]: Instance,
 })
 	local scriptName = fluid.source(props.ActiveScript().Name)
 	fluid.effect(function()
@@ -16,34 +21,30 @@ local function ScriptActions(props: {
 	end)
 
 	return LayoutFrame {
+		AutomaticSize = props.AutomaticSize,
 		Position = props.Position,
 		Size = props.Size,
 
 		Padding(6),
 
-		fluid.create "UIListLayout" {
+		ListLayout {
+			FillDirection = Enum.FillDirection.Vertical,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Top,
 			Padding = UDim.new(0, 6),
 		},
 
-		fluid.create "TextBox" {
+		TextBox {
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			TextSize = TextSize.MainButton,
-			Font = Enum.Font.BuilderSans,
 
 			PlaceholderText = "Script Name",
 			Text = scriptName,
 
-			fluid.create "UICorner" {
-				CornerRadius = UDim.new(0, 8),
-			},
+			FocusLost = function()
 
-			fluid.create "UIStroke" {
-				Thickness = 2,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			},
+			end,
 		},
 
 		ScriptActionTextButton {
@@ -60,6 +61,8 @@ local function ScriptActions(props: {
 			Text = "Execute!",
 			Activated = function() end,
 		},
+
+		table.unpack(props),
 	}
 end
 

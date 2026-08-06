@@ -1,5 +1,6 @@
 local fluid = require("../../../Packages/fluid")
 local LayoutFrame = require("./LayoutFrame")
+local ListLayout = require("./ListLayout")
 local ScriptEntry = require("./ScriptEntry")
 
 local function ScriptList(props: {
@@ -13,7 +14,7 @@ local function ScriptList(props: {
 
 		Padding = 4,
 
-		fluid.create "UIListLayout" {
+		ListLayout {
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			FillDirection = Enum.FillDirection.Vertical,
 			VerticalAlignment = Enum.VerticalAlignment.Top,

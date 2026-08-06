@@ -1,5 +1,6 @@
 local fluid = require("../../../Packages/fluid")
 local TextSize = require("../TextSize")
+local SquareAspectRatio = require("./SquareAspectRatio")
 
 local function ScriptActionImageButton(props: {
 	Content: Content,
@@ -11,11 +12,7 @@ local function ScriptActionImageButton(props: {
 		ScaleType = Enum.ScaleType.Fit,
 		Size = UDim2.fromOffset(0, TextSize.MainButton),
 
-		fluid.create "UIAspectRatioConstraint" {
-			AspectRatio = 1,
-			AspectType = Enum.AspectType.ScaleWithParentSize,
-			DominantAxis = Enum.DominantAxis.Height,
-		}
+		SquareAspectRatio(),
 	}
 end
 

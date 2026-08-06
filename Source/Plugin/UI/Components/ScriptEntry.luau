@@ -1,5 +1,6 @@
 local fluid = require("../../../Packages/fluid")
 local TextSize = require("../TextSize")
+local ListLayout = require("./ListLayout")
 local Padding = require("./Padding")
 local ScriptActionImageButton = require("./ScriptActionImageButton")
 local TextButton = require("./TextButton")
@@ -20,11 +21,10 @@ local function ScriptEntry(props: {
 
 		Activated = props.Activated,
 
-		fluid.create "UIListLayout" {
+		ListLayout {
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			FillDirection = Enum.FillDirection.Horizontal,
-			SortOrder = Enum.SortOrder.LayoutOrder,
 		},
 
 		fluid.create "TextLabel" {

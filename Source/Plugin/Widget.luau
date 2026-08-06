@@ -1,7 +1,9 @@
 local GetPlugin = require("../Lib/GetPlugin")
 local fluid = require("../Packages/fluid")
 local ScriptFile = require("./Core/ScriptFile")
+local ArgumentList = require("./UI/Components/ArgumentList")
 local LayoutFrame = require("./UI/Components/LayoutFrame")
+local ListLayout = require("./UI/Components/ListLayout")
 local ScriptActions = require("./UI/Components/ScriptActions")
 local ScriptList = require("./UI/Components/ScriptList")
 
@@ -45,11 +47,45 @@ local function commander(props: {
 			Position = UDim2.fromScale(0.5, 0),
 			Size = UDim2.fromScale(0.5, 1),
 
+			ListLayout {
+				FillDirection = Enum.FillDirection.Vertical,
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				VerticalAlignment = Enum.VerticalAlignment.Top,
+			},
+
 			ScriptActions {
 				ActiveScript = activeScript,
-				Size = UDim2.fromScale(1, 0.5)
+				Size = UDim2.fromScale(1, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+
+				fluid.create "UIFlexItem" {
+					FlexMode = Enum.UIFlexMode.Shrink,
+				},
+			},
+
+			ArgumentList {
+				Arguments = {
+					{
+						Default = "hi",
+						Name = "str",
+					},
+					{
+						Default = 1,
+						Name = "num",
+					},
+					{
+						Default = true,
+						Name = "bool",
+					},
+				},
+				Size = UDim2.fromScale(1, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+
+				fluid.create "UIFlexItem" {
+					FlexMode = Enum.UIFlexMode.Fill,
+				},
 			}
-		}
+		},
 	}
 end
 
