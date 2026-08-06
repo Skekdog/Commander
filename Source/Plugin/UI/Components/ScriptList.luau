@@ -7,6 +7,7 @@ local function ScriptList(props: {
 	Scripts: () -> {ModuleScript},
 	Size: fluid.UsedAs<UDim2>,
 	Position: fluid.UsedAs<UDim2>?,
+	ActiveScript: fluid.Source<ModuleScript>,
 })
 	return LayoutFrame {
 		Size = props.Size,
@@ -25,7 +26,7 @@ local function ScriptList(props: {
 			return ScriptEntry {
 				Script = instance(),
 				Activated = function()
-					print(i)
+					props.ActiveScript(instance())
 				end,
 			}
 		end) :: any,

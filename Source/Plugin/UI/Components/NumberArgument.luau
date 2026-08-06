@@ -7,7 +7,7 @@ local function focusLost(callback: fluid.Source<number>)
 	return fluid.action(function(instance)
 		assert(instance:IsA("TextBox"))
 
-		instance.FocusLost:Connect(function()
+		local conn = instance.FocusLost:Connect(function()
 			local text = instance.Text
 
 			local asNumber = tonumber(text)
@@ -18,6 +18,8 @@ local function focusLost(callback: fluid.Source<number>)
 
 			instance.Text = tostring(callback())
 		end)
+
+		fluid.cleanup(conn)
 	end)
 end
 

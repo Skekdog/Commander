@@ -6,6 +6,8 @@ local LayoutFrame = require("./UI/Components/LayoutFrame")
 local ListLayout = require("./UI/Components/ListLayout")
 local ScriptActions = require("./UI/Components/ScriptActions")
 local ScriptList = require("./UI/Components/ScriptList")
+local TextButton = require("./UI/Components/TextButton")
+local TextSize = require("./UI/TextSize")
 
 local plugin = GetPlugin
 
@@ -39,8 +41,21 @@ local function commander(props: {
 		BackgroundTransparency = 1,
 
 		ScriptList {
-			Size = UDim2.fromScale(0.5, 1),
+			Size = UDim2.fromScale(0.5, 0.9),
 			Scripts = props.Scripts,
+			ActiveScript = activeScript,
+		},
+
+		TextButton {
+			Size = UDim2.fromScale(0.5, 0.1),
+			Position = UDim2.fromScale(0, 0.9),
+
+			Text = "+",
+			TextSize = TextSize.MainButton,
+
+			Activated = function()
+
+			end
 		},
 
 		LayoutFrame {

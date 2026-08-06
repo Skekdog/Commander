@@ -6,6 +6,19 @@ local Padding = require("./Padding")
 local ScriptActionTextButton = require("./ScriptActionTextButton")
 local TextBox = require("./TextBox")
 
+local function focusLost(activeScript: fluid.Source<ModuleScript>)
+	return fluid.action(function(instance)
+		assert(instance:IsA("TextBox"))
+
+		local conn = instance.FocusLost:Connect(function()
+			local text = instance.Text
+			activeScript().Name = text
+		end)
+
+		fluid.cleanup(conn)
+	end)
+end
+
 local function ScriptActions(props: {
 	Position: fluid.UsedAs<UDim2>?,
 	Size: fluid.UsedAs<UDim2>,
@@ -15,10 +28,9 @@ local function ScriptActions(props: {
 
 	[number]: Instance,
 })
-	local scriptName = fluid.source(props.ActiveScript().Name)
-	fluid.effect(function()
-		scriptName(props.ActiveScript().Name)
-	end)
+	local name = function()
+		return props.ActiveScript().Name
+	end
 
 	return LayoutFrame {
 		AutomaticSize = props.AutomaticSize,
@@ -40,7 +52,9 @@ local function ScriptActions(props: {
 			TextSize = TextSize.MainButton,
 
 			PlaceholderText = "Script Name",
-			Text = scriptName,
+			Text = name,
+
+			focusLost(props.ActiveScript, name)
 		},
 
 		ScriptActionTextButton {

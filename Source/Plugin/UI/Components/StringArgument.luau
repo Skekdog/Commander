@@ -7,9 +7,11 @@ local function focusLost(callback: fluid.Source<string>)
 	return fluid.action(function(instance)
 		assert(instance:IsA("TextBox"))
 
-		instance.FocusLost:Connect(function()
+		local conn = instance.FocusLost:Connect(function()
 			callback(instance.Text)
 		end)
+
+		fluid.cleanup(conn)
 	end)
 end
 
