@@ -1,5 +1,6 @@
 local GetPlugin = require("../Lib/GetPlugin")
 local fluid = require("../Packages/fluid")
+local CreateNewScript = require("./Core/CreateNewScript")
 local ScriptFile = require("./Core/ScriptFile")
 local ArgumentList = require("./UI/Components/ArgumentList")
 local LayoutFrame = require("./UI/Components/LayoutFrame")
@@ -53,9 +54,7 @@ local function commander(props: {
 			Text = "+",
 			TextSize = TextSize.MainButton,
 
-			Activated = function()
-
-			end
+			Activated = CreateNewScript,
 		},
 
 		LayoutFrame {
