@@ -1,6 +1,8 @@
 # Commander
 
-## Security notice: Other plugins are able to read your scripts, including any API keys stored within. Be cautious when storing API keys within scripts.
+## Security Notice
+
+Other plugins are able to read your scripts, including any API keys stored within. Be cautious when storing API keys within scripts.
 
 ![Commander](./Assets/Commander.png)
 
