@@ -7,4 +7,3 @@ sourcemap.json
 .vscode/*
 !.vscode/settings.json
 Ignore/
-Packages/

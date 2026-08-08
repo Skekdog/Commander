@@ -1,0 +1,4 @@
+[submodule "Packages/fluid"]
+	path = Packages/fluid
+	url = https://github.com/ffrostfall/fluid.git
+	branch = a93f33a
