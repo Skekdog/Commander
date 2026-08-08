@@ -1,5 +1,7 @@
 # Commander
 
+## Security notice: Other plugins are able to read your scripts, including any API keys stored within. Be cautious when storing API keys within scripts.
+
 ![Commander](./Assets/Commander.png)
 
 A Roblox Studio plugin, providing a simple multi-line command bar, with support for undo, saving presets and syntax highlighting.
